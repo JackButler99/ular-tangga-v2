@@ -13,7 +13,7 @@ import type {
   PlayerRole,
 } from "@/features/platform/room/types";
 
-type RoomRow = typeof gameRooms.$inferSelect;
+export type RoomRow = typeof gameRooms.$inferSelect;
 
 const ROOM_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
@@ -45,7 +45,7 @@ function parseHistory(value: string): GameHistoryItem[] {
   }
 }
 
-function roleForToken(row: RoomRow, token: string): PlayerRole | null {
+export function roleForToken(row: RoomRow, token: string): PlayerRole | null {
   if (token && token === row.hostToken) return "host";
   if (token && token === row.guestToken) return "guest";
   return null;
