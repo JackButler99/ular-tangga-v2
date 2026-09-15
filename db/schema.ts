@@ -1,5 +1,6 @@
 import {
   integer,
+  jsonb,
   pgTable,
   text,
   timestamp,
@@ -8,7 +9,10 @@ import {
 export const gameRooms = pgTable("game_rooms", {
   code: text("code").primaryKey(),
   gameSlug: text("game_slug").notNull().default("ular-tangga"),
-
+  gameState: jsonb("game_state")
+    .$type<unknown>()
+    .notNull()
+    .default({}),
   hostName: text("host_name").notNull(),
   hostToken: text("host_token").notNull(),
 

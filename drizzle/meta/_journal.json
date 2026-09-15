@@ -15,6 +15,13 @@
       "when": 1789465973642,
       "tag": "0001_light_reptil",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789496054007,
+      "tag": "0002_normal_vindicator",
+      "breakpoints": true
     }
   ]
 }

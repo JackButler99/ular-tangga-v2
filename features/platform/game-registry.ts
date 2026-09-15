@@ -11,7 +11,8 @@ export type GameCatalogItem = {
   href: string | null;
 };
 
-export const SNAKE_LADDER_SLUG = "ular-tangga";
+export const SNAKE_LADDER_SLUG = "ular-tangga"
+export const COUPLE_QUIZ_SLUG = "seberapa-kenal";;
 
 export const GAME_CATALOG: readonly GameCatalogItem[] = [
   {
@@ -26,7 +27,7 @@ export const GAME_CATALOG: readonly GameCatalogItem[] = [
     href: "/games/ular-tangga",
   },
   {
-    slug: "seberapa-kenal",
+    slug: COUPLE_QUIZ_SLUG,
     title: "Seberapa Kenal Kamu?",
     description:
       "Tebak jawaban pasanganmu lalu buka hasilnya secara bersamaan.",

@@ -1,6 +1,7 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { gameRooms } from "@/db/schema";
+import { createInitialGameState } from "@/features/platform/room/create-game-state";
 import {
   CHALLENGES,
   CHALLENGE_POSITIONS,
@@ -88,6 +89,7 @@ export async function createRoom(
 ) {
   const db = getDb();
   const token = createPlayerToken();
+  const gameState = createInitialGameState(gameSlug);
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const code = createRoomCode();
     const now = new Date().toISOString();
@@ -97,7 +99,7 @@ export async function createRoom(
     try {
       const [room] = await db
         .insert(gameRooms)
-        .values({ code, gameSlug, hostName, hostToken: token, history: JSON.stringify(history), updatedAt: now })
+        .values({ code, gameSlug, gameState, hostName, hostToken: token, history: JSON.stringify(history), updatedAt: now })
         .returning();
       return { room, token };
     } catch (error) {

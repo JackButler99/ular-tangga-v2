@@ -11,6 +11,7 @@ export type QuizPhase =
   | "finished";
 
 export type QuizState = {
+  schemaVersion: 1;
   questionIds: string[];
   roundIndex: number;
   subject: PlayerRole;
@@ -38,6 +39,7 @@ export function createInitialQuizState(
   questionIds.forEach(getQuizQuestion);
 
   return {
+    schemaVersion: 1,
     questionIds: [...questionIds],
     roundIndex: 0,
     subject: "host",
