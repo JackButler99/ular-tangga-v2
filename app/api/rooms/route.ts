@@ -1,26 +1,26 @@
 import {
-  cleanName,
-  createRoom,
-  toRoomView,
-} from "@/lib/rooms";
-
-import {
   isPlayableGameSlug,
   SNAKE_LADDER_SLUG,
 } from "@/features/platform/game-registry";
+import { toGameRoomView } from "@/features/platform/room/to-game-room-view";
+import {
+  cleanName,
+  createRoom,
+} from "@/lib/rooms";
 
 export async function POST(request: Request) {
   try {
     const payload = (await request.json()) as {
       hostName?: unknown;
-      gameSlug?:unknown;
+      gameSlug?: unknown;
     };
 
     const hostName = cleanName(payload.hostName);
+
     const gameSlug =
-    typeof payload.gameSlug === "string"
-      ? payload.gameSlug
-      : SNAKE_LADDER_SLUG;
+      typeof payload.gameSlug === "string"
+        ? payload.gameSlug
+        : SNAKE_LADDER_SLUG;
 
     if (hostName.length < 2) {
       return Response.json(
@@ -32,6 +32,7 @@ export async function POST(request: Request) {
         },
       );
     }
+
     if (!isPlayableGameSlug(gameSlug)) {
       return Response.json(
         {
@@ -42,11 +43,15 @@ export async function POST(request: Request) {
         },
       );
     }
-    const { room, token } = await createRoom(hostName, gameSlug);
+
+    const { room, token } = await createRoom(
+      hostName,
+      gameSlug,
+    );
 
     return Response.json(
       {
-        ...toRoomView(room, token),
+        ...toGameRoomView(room, token),
         token,
       },
       {
