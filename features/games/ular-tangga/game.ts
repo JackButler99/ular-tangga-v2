@@ -1,28 +1,29 @@
-export type PlayerRole = "host" | "guest";
+import type {
+  BaseRoomView,
+  GameHistoryItem,
+  PlayerRole,
+} from "@/features/platform/room/types";
 
-export type GameHistoryItem = {
-  at: string;
-  role: PlayerRole | null;
-  title: string;
-  detail: string;
-};
-
-export type RoomView = {
-  code: string;
-  gameSlug: string;
-  status: "waiting" | "active" | "finished";
+export type SnakeLadderRoomView = BaseRoomView & {
   turn: PlayerRole;
-  you: PlayerRole | null;
   players: {
-    host: { name: string; position: number };
-    guest: { name: string; position: number } | null;
+    host: {
+      name: string;
+      position: number;
+    };
+    guest: {
+      name: string;
+      position: number;
+    } | null;
   };
-  winner: { role: PlayerRole; name: string } | null;
+  winner: {
+    role: PlayerRole;
+    name: string;
+  } | null;
   lastRoll: number | null;
   challenge: string | null;
   challengeFor: PlayerRole | null;
   history: GameHistoryItem[];
-  updatedAt: string;
 };
 
 export const LADDERS: Record<number, number> = {

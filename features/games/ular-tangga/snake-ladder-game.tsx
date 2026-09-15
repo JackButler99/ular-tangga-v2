@@ -9,9 +9,13 @@ import {
   CHALLENGE_POSITIONS,
   LADDERS,
   SNAKES,
-  type PlayerRole,
-  type RoomView,
+  type SnakeLadderRoomView,
 } from "@/features/games/ular-tangga/game";
+
+import type {
+  PlayerRole,
+} from "@/features/platform/room/types";
+
 import { SNAKE_LADDER_SLUG } from "@/features/platform/game-registry";
 
 const TOKEN_KEY = "jarak-dadu-player";
@@ -24,12 +28,12 @@ function wait(duration: number) {
   });
 }
 
-function positionForRole(room: RoomView, role: PlayerRole) {
+function positionForRole(room: SnakeLadderRoomView, role: PlayerRole) {
   if (role === "host") return room.players.host.position;
   return room.players.guest?.position ?? 1;
 }
 
-function nameForRole(room: RoomView, role: PlayerRole) {
+function nameForRole(room: SnakeLadderRoomView, role: PlayerRole) {
   if (role === "host") return room.players.host.name;
   return room.players.guest?.name ?? "Pasangan";
 }
@@ -88,7 +92,7 @@ function Board({
   movingRole,
   transitioningRole,
 }: {
-  room: RoomView;
+  room: SnakeLadderRoomView;
   animatedPositions: AnimatedPositions;
   highlightedCell: number | null;
   movingRole: PlayerRole | null;
@@ -292,7 +296,7 @@ function JoinRoom({
   onJoin,
   onBack,
 }: {
-  room: RoomView;
+  room: SnakeLadderRoomView;
   name: string;
   setName: (value: string) => void;
   busy: boolean;
@@ -351,7 +355,7 @@ function JoinRoom({
 }
 
 export default function SnakeLadderGame() {
-  const [room, setRoom] = useState<RoomView | null>(null);
+  const [room, setRoom] = useState<SnakeLadderRoomView | null>(null);
   const [token, setToken] = useState("");
   const [name, setName] = useState("");
   const [roomCode, setRoomCode] = useState("");
@@ -368,10 +372,10 @@ export default function SnakeLadderGame() {
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [booting, setBooting] = useState(true);
-  const roomRef = useRef<RoomView | null>(null);
+  const roomRef = useRef<SnakeLadderRoomView | null>(null);
   const animationLockRef = useRef(false);
 
-  const commitRoom = useCallback((nextRoom: RoomView) => {
+  const commitRoom = useCallback((nextRoom: SnakeLadderRoomView) => {
     roomRef.current = nextRoom;
     setRoom(nextRoom);
   }, []);
@@ -381,7 +385,7 @@ export default function SnakeLadderGame() {
       headers: playerToken ? { "x-player-token": playerToken } : undefined,
       cache: "no-store",
     });
-    const payload = (await response.json()) as RoomView & { error?: string };
+    const payload = (await response.json()) as SnakeLadderRoomView & { error?: string };
     if (!response.ok) throw new Error(payload.error ?? "Ruang tidak ditemukan.");
     if (payload.gameSlug !== SNAKE_LADDER_SLUG) {
       throw new Error("Kode ruang ini digunakan oleh permainan lain.");
@@ -389,7 +393,7 @@ export default function SnakeLadderGame() {
     return payload;
   }, []);
 
-  const animateMovement = useCallback(async (fromRoom: RoomView, nextRoom: RoomView) => {
+  const animateMovement = useCallback(async (fromRoom: SnakeLadderRoomView, nextRoom: SnakeLadderRoomView) => {
     const latestEvent = nextRoom.history[0];
     const roll = nextRoom.lastRoll;
     const role = latestEvent?.role;
@@ -453,7 +457,7 @@ export default function SnakeLadderGame() {
     setMotionMessage("");
   }, []);
 
-  const playIncomingRoll = useCallback(async (nextRoom: RoomView) => {
+  const playIncomingRoll = useCallback(async (nextRoom: SnakeLadderRoomView) => {
     const currentRoom = roomRef.current;
     const latestEvent = nextRoom.history[0];
 
@@ -558,7 +562,7 @@ export default function SnakeLadderGame() {
           gameSlug: SNAKE_LADDER_SLUG,
         }),
       });
-      const payload = (await response.json()) as RoomView & { token?: string; error?: string };
+      const payload = (await response.json()) as SnakeLadderRoomView & { token?: string; error?: string };
       if (!response.ok || !payload.token) throw new Error(payload.error ?? "Ruang belum berhasil dibuat.");
       saveToken(payload.code, payload.token);
       setToken(payload.token);
@@ -601,7 +605,7 @@ export default function SnakeLadderGame() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ action: "join", guestName: name }),
       });
-      const payload = (await response.json()) as RoomView & { token?: string; error?: string };
+      const payload = (await response.json()) as SnakeLadderRoomView & { token?: string; error?: string };
       if (!response.ok || !payload.token) throw new Error(payload.error ?? "Belum bisa bergabung.");
       saveToken(room.code, payload.token);
       setToken(payload.token);
@@ -622,7 +626,7 @@ export default function SnakeLadderGame() {
       headers: { "content-type": "application/json", "x-player-token": token },
       body: JSON.stringify({ action }),
     });
-    const payload = (await response.json()) as RoomView & { error?: string };
+    const payload = (await response.json()) as SnakeLadderRoomView & { error?: string };
     if (!response.ok) throw new Error(payload.error ?? "Aksi belum berhasil.");
     return payload;
   };
@@ -974,7 +978,7 @@ function Header({
   copied,
 }: {
   game?: boolean;
-  room?: RoomView;
+  room?: SnakeLadderRoomView;
   onCopy?: () => void;
   copied?: boolean;
 }) {

@@ -5,10 +5,12 @@ import {
   CHALLENGES,
   CHALLENGE_POSITIONS,
   resolveMove,
-  type GameHistoryItem,
-  type PlayerRole,
-  type RoomView,
+  type SnakeLadderRoomView,
 } from "@/features/games/ular-tangga/game";
+import type {
+  GameHistoryItem,
+  PlayerRole,
+} from "@/features/platform/room/types";
 
 type RoomRow = typeof gameRooms.$inferSelect;
 
@@ -48,7 +50,7 @@ function roleForToken(row: RoomRow, token: string): PlayerRole | null {
   return null;
 }
 
-export function toRoomView(row: RoomRow, token = ""): RoomView {
+export function toRoomView(row: RoomRow, token = ""): SnakeLadderRoomView {
   const winnerName = row.winner === "host" ? row.hostName : row.winner === "guest" ? row.guestName : null;
   const history = parseHistory(row.history);
   const challengeFor = row.challenge
