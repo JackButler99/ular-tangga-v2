@@ -70,8 +70,14 @@ export async function applyQuizRoomAction(
       requireAnswerIndex(answerIndex),
     );
   } else {
-    nextState = continueQuiz(state);
+  if (role !== "host") {
+    throw new Error(
+      "Hanya pembuat room yang bisa melanjutkan ronde.",
+    );
   }
+
+  nextState = continueQuiz(state);
+}
 
   const now = new Date().toISOString();
   const db = getDb();
