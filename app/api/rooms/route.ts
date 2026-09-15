@@ -4,13 +4,23 @@ import {
   toRoomView,
 } from "@/lib/rooms";
 
+import {
+  isPlayableGameSlug,
+  SNAKE_LADDER_SLUG,
+} from "@/features/platform/game-registry";
+
 export async function POST(request: Request) {
   try {
     const payload = (await request.json()) as {
       hostName?: unknown;
+      gameSlug?:unknown;
     };
 
     const hostName = cleanName(payload.hostName);
+    const gameSlug =
+    typeof payload.gameSlug === "string"
+      ? payload.gameSlug
+      : SNAKE_LADDER_SLUG;
 
     if (hostName.length < 2) {
       return Response.json(
@@ -22,8 +32,17 @@ export async function POST(request: Request) {
         },
       );
     }
-
-    const { room, token } = await createRoom(hostName);
+    if (!isPlayableGameSlug(gameSlug)) {
+      return Response.json(
+        {
+          error: "Permainan belum tersedia.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+    const { room, token } = await createRoom(hostName, gameSlug);
 
     return Response.json(
       {

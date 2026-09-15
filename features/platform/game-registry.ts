@@ -11,9 +11,11 @@ export type GameCatalogItem = {
   href: string | null;
 };
 
+export const SNAKE_LADDER_SLUG = "ular-tangga";
+
 export const GAME_CATALOG: readonly GameCatalogItem[] = [
   {
-    slug: "ular-tangga",
+    slug: SNAKE_LADDER_SLUG,
     title: "Ular Tangga Cerita",
     description:
       "Lempar dadu, temukan petak cerita, dan sampai ke garis akhir bersama.",
@@ -46,3 +48,9 @@ export const GAME_CATALOG: readonly GameCatalogItem[] = [
     href: null,
   },
 ];
+
+export function isPlayableGameSlug(value: string) {
+  return GAME_CATALOG.some(
+    (game) => game.slug === value && game.status === "available",
+  );
+}

@@ -57,6 +57,7 @@ export function toRoomView(row: RoomRow, token = ""): RoomView {
 
   return {
     code: row.code,
+    gameSlug: row.gameSlug,
     status: row.status,
     turn: row.turn,
     you: roleForToken(row, token),
@@ -79,7 +80,10 @@ export async function getRoom(code: string) {
   return room ?? null;
 }
 
-export async function createRoom(hostName: string) {
+export async function createRoom(
+  hostName: string,
+  gameSlug: string,
+) {
   const db = getDb();
   const token = createPlayerToken();
   for (let attempt = 0; attempt < 5; attempt += 1) {
@@ -91,7 +95,7 @@ export async function createRoom(hostName: string) {
     try {
       const [room] = await db
         .insert(gameRooms)
-        .values({ code, hostName, hostToken: token, history: JSON.stringify(history), updatedAt: now })
+        .values({ code, gameSlug, hostName, hostToken: token, history: JSON.stringify(history), updatedAt: now })
         .returning();
       return { room, token };
     } catch (error) {

@@ -7,6 +7,7 @@ import {
 
 export const gameRooms = pgTable("game_rooms", {
   code: text("code").primaryKey(),
+  gameSlug: text("game_slug").notNull().default("ular-tangga"),
 
   hostName: text("host_name").notNull(),
   hostToken: text("host_token").notNull(),

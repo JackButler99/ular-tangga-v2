@@ -9,6 +9,7 @@ export type GameHistoryItem = {
 
 export type RoomView = {
   code: string;
+  gameSlug: string;
   status: "waiting" | "active" | "finished";
   turn: PlayerRole;
   you: PlayerRole | null;

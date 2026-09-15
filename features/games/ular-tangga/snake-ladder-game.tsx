@@ -12,6 +12,7 @@ import {
   type PlayerRole,
   type RoomView,
 } from "@/lib/game";
+import { SNAKE_LADDER_SLUG } from "@/features/platform/game-registry";
 
 const TOKEN_KEY = "jarak-dadu-player";
 
@@ -382,6 +383,9 @@ export default function SnakeLadderGame() {
     });
     const payload = (await response.json()) as RoomView & { error?: string };
     if (!response.ok) throw new Error(payload.error ?? "Ruang tidak ditemukan.");
+    if (payload.gameSlug !== SNAKE_LADDER_SLUG) {
+      throw new Error("Kode ruang ini digunakan oleh permainan lain.");
+    }
     return payload;
   }, []);
 
@@ -549,7 +553,10 @@ export default function SnakeLadderGame() {
       const response = await fetch("/api/rooms", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ hostName: name }),
+        body: JSON.stringify({
+          hostName: name, 
+          gameSlug: SNAKE_LADDER_SLUG,
+        }),
       });
       const payload = (await response.json()) as RoomView & { token?: string; error?: string };
       if (!response.ok || !payload.token) throw new Error(payload.error ?? "Ruang belum berhasil dibuat.");

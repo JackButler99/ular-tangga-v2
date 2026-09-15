@@ -1,0 +1,1 @@
+ALTER TABLE "game_rooms" ADD COLUMN "game_slug" text DEFAULT 'ular-tangga' NOT NULL;
