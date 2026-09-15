@@ -106,7 +106,7 @@ export async function joinRoom(row: RoomRow, guestName: string) {
   const token = createPlayerToken();
   const now = new Date().toISOString();
   const history: GameHistoryItem[] = [
-    { at: now, role: "guest", title: `${guestName} sudah bergabung`, detail: "Permainan dimulai. Giliran host lebih dulu." },
+    { at: now, role: "guest" as const, title: `${guestName} sudah bergabung`, detail: "Permainan dimulai. Giliran host lebih dulu." },
     ...parseHistory(row.history),
   ].slice(0, 12);
   const db = getDb();
