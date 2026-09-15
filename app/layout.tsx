@@ -13,8 +13,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ular Tangga",
-  description: "Ular Tangga",
+  title: {
+    default: "Main Berdua",
+    template: "%s | Main Berdua",
+  },
+  description:
+    "Kumpulan game romantis gratis untuk quality time bersama pasangan.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
