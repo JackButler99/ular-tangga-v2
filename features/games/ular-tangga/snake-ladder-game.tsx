@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { BoardDecorations } from "@/components/board-decorations";
-import { FinishCelebration } from "@/components/finish-celebration";
+import { BoardDecorations } from "@/features/games/ular-tangga/components/board-decorations";
+import { FinishCelebration } from "@/features/games/ular-tangga/components/finish-celebration";
 import {
   BOARD_CELLS,
   CHALLENGE_POSITIONS,
@@ -11,7 +11,7 @@ import {
   SNAKES,
   type PlayerRole,
   type RoomView,
-} from "@/lib/game";
+} from "@/features/games/ular-tangga/game";
 import { SNAKE_LADDER_SLUG } from "@/features/platform/game-registry";
 
 const TOKEN_KEY = "jarak-dadu-player";

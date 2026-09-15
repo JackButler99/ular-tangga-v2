@@ -8,7 +8,7 @@ import {
   type GameHistoryItem,
   type PlayerRole,
   type RoomView,
-} from "@/lib/game";
+} from "@/features/games/ular-tangga/game";
 
 type RoomRow = typeof gameRooms.$inferSelect;
 

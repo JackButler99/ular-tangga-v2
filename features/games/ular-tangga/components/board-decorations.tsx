@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { LADDERS, SNAKES } from "@/lib/game";
+import { LADDERS, SNAKES } from "@/features/games/ular-tangga/game";
 
 type DecorationType = "snake" | "ladder";
 
