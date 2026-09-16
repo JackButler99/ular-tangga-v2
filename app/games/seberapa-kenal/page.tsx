@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import QuizPrototype from "@/features/games/seberapa-kenal/quiz-prototype";
+import QuizGame from "@/features/games/seberapa-kenal/quiz-game";
 
 export const metadata: Metadata = {
   title: "Seberapa Kenal Kamu?",
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function SeberapaKenalPage() {
-  return <QuizPrototype />;
+  return <QuizGame />;
 }

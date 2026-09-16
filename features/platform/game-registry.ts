@@ -33,9 +33,8 @@ export const GAME_CATALOG: readonly GameCatalogItem[] = [
       "Tebak jawaban pasanganmu lalu buka hasilnya secara bersamaan.",
     mood: "Seru & penasaran",
     duration: "5–10 menit",
-    symbol: "?",
-    status: "coming-soon",
-    href: null,
+    symbol: "?",status: "available",
+    href: "/games/seberapa-kenal",
   },
   {
     slug: "siapa-yang-lebih",
