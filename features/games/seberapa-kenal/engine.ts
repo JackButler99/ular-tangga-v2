@@ -1,14 +1,23 @@
 import type { PlayerRole } from "@/features/platform/room/types";
 import {
+  DEFAULT_QUESTION_COUNT,
+  selectQuestionIds,
+  type QuestionCount,
+} from "@/features/platform/question-count";
+
+import {
   getQuizQuestion,
   QUIZ_QUESTIONS,
-} from "@/features/games/seberapa-kenal/questions";
+  type QuizQuestion,
+} from "./questions";
 
 export type QuizPhase =
   | "subject-answer"
   | "guesser-answer"
   | "reveal"
   | "finished";
+
+export type QuizScores = Record<PlayerRole, number>;
 
 export type QuizState = {
   schemaVersion: 1;
@@ -18,29 +27,25 @@ export type QuizState = {
   phase: QuizPhase;
   subjectAnswer: number | null;
   guessAnswer: number | null;
-  scores: Record<PlayerRole, number>;
+  scores: QuizScores;
 };
 
-const DEFAULT_ROUND_COUNT = 6;
-
-export function otherPlayer(role: PlayerRole): PlayerRole {
+export function otherPlayer(
+  role: PlayerRole,
+): PlayerRole {
   return role === "host" ? "guest" : "host";
 }
 
 export function createInitialQuizState(
-  questionIds: readonly string[] = QUIZ_QUESTIONS
-    .slice(0, DEFAULT_ROUND_COUNT)
-    .map((question) => question.id),
+  questionCount: QuestionCount =
+    DEFAULT_QUESTION_COUNT,
 ): QuizState {
-  if (questionIds.length === 0) {
-    throw new Error("Permainan membutuhkan minimal satu pertanyaan.");
-  }
-
-  questionIds.forEach(getQuizQuestion);
-
   return {
     schemaVersion: 1,
-    questionIds: [...questionIds],
+    questionIds: selectQuestionIds(
+      QUIZ_QUESTIONS,
+      questionCount,
+    ),
     roundIndex: 0,
     subject: "host",
     phase: "subject-answer",
@@ -53,26 +58,28 @@ export function createInitialQuizState(
   };
 }
 
-export function getCurrentQuizQuestion(state: QuizState) {
-  const questionId = state.questionIds[state.roundIndex];
+export function getCurrentQuizQuestion(
+  state: QuizState,
+): QuizQuestion {
+  const questionId =
+    state.questionIds[state.roundIndex];
 
   if (!questionId) {
-    throw new Error("Ronde permainan tidak valid.");
+    throw new Error("Ronde kuis tidak valid.");
   }
 
   return getQuizQuestion(questionId);
 }
 
-function validateAnswer(state: QuizState, answerIndex: number) {
-  const question = getCurrentQuizQuestion(state);
-
-  if (
-    !Number.isInteger(answerIndex) ||
-    answerIndex < 0 ||
-    answerIndex >= question.options.length
-  ) {
-    throw new Error("Pilihan jawaban tidak valid.");
-  }
+export function validateAnswer(
+  question: QuizQuestion,
+  answerIndex: number,
+) {
+  return (
+    Number.isInteger(answerIndex) &&
+    answerIndex >= 0 &&
+    answerIndex < question.options.length
+  );
 }
 
 export function submitSubjectAnswer(
@@ -81,19 +88,28 @@ export function submitSubjectAnswer(
   answerIndex: number,
 ): QuizState {
   if (state.phase !== "subject-answer") {
-    throw new Error("Jawaban asli sudah diberikan.");
+    throw new Error(
+      "Kuis tidak sedang menerima jawaban utama.",
+    );
   }
 
   if (role !== state.subject) {
-    throw new Error("Saat ini pasanganmu yang harus menjawab.");
+    throw new Error(
+      "Giliran pasanganmu memilih jawaban.",
+    );
   }
 
-  validateAnswer(state, answerIndex);
+  const question = getCurrentQuizQuestion(state);
+
+  if (!validateAnswer(question, answerIndex)) {
+    throw new Error("Jawaban tidak valid.");
+  }
 
   return {
     ...state,
     phase: "guesser-answer",
     subjectAnswer: answerIndex,
+    guessAnswer: null,
   };
 }
 
@@ -103,33 +119,55 @@ export function submitGuess(
   answerIndex: number,
 ): QuizState {
   if (state.phase !== "guesser-answer") {
-    throw new Error("Belum waktunya memberikan tebakan.");
+    throw new Error(
+      "Kuis tidak sedang menerima tebakan.",
+    );
   }
 
   const guesser = otherPlayer(state.subject);
 
   if (role !== guesser) {
-    throw new Error("Kamu tidak dapat menebak jawabanmu sendiri.");
+    throw new Error(
+      "Belum giliranmu memberikan tebakan.",
+    );
   }
 
-  validateAnswer(state, answerIndex);
+  const question = getCurrentQuizQuestion(state);
 
-  const matched = state.subjectAnswer === answerIndex;
+  if (!validateAnswer(question, answerIndex)) {
+    throw new Error("Tebakan tidak valid.");
+  }
+
+  if (state.subjectAnswer === null) {
+    throw new Error("Jawaban utama belum tersedia.");
+  }
+
+  const matched =
+    state.subjectAnswer === answerIndex;
+
+  const scores: QuizScores = {
+    ...state.scores,
+  };
+
+  if (matched) {
+    scores[guesser] += 1;
+  }
 
   return {
     ...state,
     phase: "reveal",
     guessAnswer: answerIndex,
-    scores: {
-      ...state.scores,
-      [role]: state.scores[role] + (matched ? 1 : 0),
-    },
+    scores,
   };
 }
 
-export function continueQuiz(state: QuizState): QuizState {
+export function continueQuiz(
+  state: QuizState,
+): QuizState {
   if (state.phase !== "reveal") {
-    throw new Error("Jawaban belum bisa dilanjutkan.");
+    throw new Error(
+      "Hasil ronde belum dapat dilanjutkan.",
+    );
   }
 
   const nextRoundIndex = state.roundIndex + 1;

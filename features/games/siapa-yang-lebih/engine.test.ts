@@ -12,8 +12,8 @@ describe("most likely game engine", () => {
 
     expect(state.phase).toBe("answering");
     expect(state.roundIndex).toBe(0);
-    expect(state.questionIds).toHaveLength(6);
-    expect(new Set(state.questionIds).size).toBe(6);
+    expect(state.questionIds).toHaveLength(10);
+    expect(new Set(state.questionIds).size).toBe(10);
     expect(state.agreementCount).toBe(0);
   });
 

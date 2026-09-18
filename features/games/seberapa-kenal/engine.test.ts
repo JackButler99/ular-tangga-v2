@@ -23,8 +23,8 @@ describe("couple quiz engine", () => {
       guest: 0,
     });
 
-    expect(state.questionIds).toHaveLength(6);
-    expect(new Set(state.questionIds).size).toBe(6);
+    expect(state.questionIds).toHaveLength(10);
+    expect(new Set(state.questionIds).size).toBe(10);
   });
 
   it("memberikan skor kepada pemain yang menebak benar", () => {

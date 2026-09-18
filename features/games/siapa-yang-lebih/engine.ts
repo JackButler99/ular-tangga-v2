@@ -1,11 +1,20 @@
 import type { PlayerRole } from "@/features/platform/room/types";
+import {
+  DEFAULT_QUESTION_COUNT,
+  selectQuestionIds,
+  type QuestionCount,
+} from "@/features/platform/question-count";
 
 import {
   getMostLikelyQuestion,
   MOST_LIKELY_QUESTIONS,
+  type MostLikelyQuestion,
 } from "./questions";
 
-export type MostLikelyPhase = "answering" | "reveal" | "finished";
+export type MostLikelyPhase =
+  | "answering"
+  | "reveal"
+  | "finished";
 
 export type MostLikelyAnswers = Record<
   PlayerRole,
@@ -21,27 +30,16 @@ export type MostLikelyState = {
   agreementCount: number;
 };
 
-function shuffle<T>(items: readonly T[]): T[] {
-  const result = [...items];
-
-  for (let index = result.length - 1; index > 0; index -= 1) {
-    const randomIndex = Math.floor(Math.random() * (index + 1));
-
-    [result[index], result[randomIndex]] = [
-      result[randomIndex],
-      result[index],
-    ];
-  }
-
-  return result;
-}
-
-export function createInitialMostLikelyState(): MostLikelyState {
+export function createInitialMostLikelyState(
+  questionCount: QuestionCount =
+    DEFAULT_QUESTION_COUNT,
+): MostLikelyState {
   return {
     schemaVersion: 1,
-    questionIds: shuffle(MOST_LIKELY_QUESTIONS)
-      .slice(0, 6)
-      .map((question) => question.id),
+    questionIds: selectQuestionIds(
+      MOST_LIKELY_QUESTIONS,
+      questionCount,
+    ),
     roundIndex: 0,
     phase: "answering",
     answers: {
@@ -54,8 +52,9 @@ export function createInitialMostLikelyState(): MostLikelyState {
 
 export function getCurrentMostLikelyQuestion(
   state: MostLikelyState,
-) {
-  const questionId = state.questionIds[state.roundIndex];
+): MostLikelyQuestion | null {
+  const questionId =
+    state.questionIds[state.roundIndex];
 
   if (!questionId) {
     return null;
@@ -70,11 +69,15 @@ export function submitMostLikelyAnswer(
   answer: PlayerRole,
 ): MostLikelyState {
   if (state.phase !== "answering") {
-    throw new Error("Ronde ini tidak sedang menerima jawaban.");
+    throw new Error(
+      "Ronde ini tidak sedang menerima jawaban.",
+    );
   }
 
   if (state.answers[actor] !== null) {
-    throw new Error("Kamu sudah menjawab ronde ini.");
+    throw new Error(
+      "Kamu sudah menjawab ronde ini.",
+    );
   }
 
   if (answer !== "host" && answer !== "guest") {
@@ -87,10 +90,12 @@ export function submitMostLikelyAnswer(
   };
 
   const bothAnswered =
-    answers.host !== null && answers.guest !== null;
+    answers.host !== null &&
+    answers.guest !== null;
 
   const agreed =
-    bothAnswered && answers.host === answers.guest;
+    bothAnswered &&
+    answers.host === answers.guest;
 
   return {
     ...state,
@@ -105,7 +110,9 @@ export function continueMostLikely(
   state: MostLikelyState,
 ): MostLikelyState {
   if (state.phase !== "reveal") {
-    throw new Error("Hasil ronde belum dapat dilanjutkan.");
+    throw new Error(
+      "Hasil ronde belum dapat dilanjutkan.",
+    );
   }
 
   const nextRoundIndex = state.roundIndex + 1;
