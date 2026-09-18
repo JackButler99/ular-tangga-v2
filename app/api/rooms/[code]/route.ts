@@ -3,7 +3,12 @@ import {
   type QuizRoomAction,
 } from "@/features/games/seberapa-kenal/room-actions";
 import {
+  applyMostLikelyRoomAction,
+  isMostLikelyRoomAction,
+} from "@/features/games/siapa-yang-lebih/room-actions";
+import {
   COUPLE_QUIZ_SLUG,
+  MOST_LIKELY_SLUG,
   SNAKE_LADDER_SLUG,
 } from "@/features/platform/game-registry";
 import { toGameRoomView } from "@/features/platform/room/to-game-room-view";
@@ -50,7 +55,8 @@ function responseStatus(message: string) {
     message.includes("Belum giliran") ||
     message.includes("Hanya pembuat") ||
     message.includes("tidak dikenali") ||
-    message.includes("giliran pasanganmu")
+    message.includes("giliran pasanganmu") ||
+    message.includes("Token pemain tidak valid")
   ) {
     return 403;
   }
@@ -127,6 +133,7 @@ export async function POST(
       action?: unknown;
       guestName?: unknown;
       answerIndex?: unknown;
+      answer?: unknown;
     };
 
     const token = tokenFrom(request);
@@ -165,6 +172,22 @@ export async function POST(
         token,
         payload.action,
         payload.answerIndex,
+      );
+
+      return Response.json(
+        toGameRoomView(updated, token),
+      );
+    }
+
+    if (
+      room.gameSlug === MOST_LIKELY_SLUG &&
+      isMostLikelyRoomAction(payload.action)
+    ) {
+      const updated = await applyMostLikelyRoomAction(
+        room,
+        token,
+        payload.action,
+        payload.answer,
       );
 
       return Response.json(
