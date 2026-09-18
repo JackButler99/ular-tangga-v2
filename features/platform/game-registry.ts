@@ -45,8 +45,8 @@ export const GAME_CATALOG: readonly GameCatalogItem[] = [
     mood: "Cepat & jenaka",
     duration: "5 menit",
     symbol: "↔",
-    status: "coming-soon",
-    href: null,
+    status: "available",
+    href: "/games/siapa-yang-lebih",
   },
 ];
 
