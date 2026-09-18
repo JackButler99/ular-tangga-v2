@@ -12,7 +12,8 @@ export type GameCatalogItem = {
 };
 
 export const SNAKE_LADDER_SLUG = "ular-tangga"
-export const COUPLE_QUIZ_SLUG = "seberapa-kenal";;
+export const COUPLE_QUIZ_SLUG = "seberapa-kenal";
+export const MOST_LIKELY_SLUG = "siapa-yang-lebih";
 
 export const GAME_CATALOG: readonly GameCatalogItem[] = [
   {
@@ -37,7 +38,7 @@ export const GAME_CATALOG: readonly GameCatalogItem[] = [
     href: "/games/seberapa-kenal",
   },
   {
-    slug: "siapa-yang-lebih",
+    slug: MOST_LIKELY_SLUG,
     title: "Siapa yang Lebih…?",
     description:
       "Pilih secara rahasia siapa yang paling cocok dengan setiap pertanyaan.",
