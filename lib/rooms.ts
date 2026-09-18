@@ -12,6 +12,10 @@ import type {
   GameHistoryItem,
   PlayerRole,
 } from "@/features/platform/room/types";
+import {
+  DEFAULT_QUESTION_COUNT,
+  type QuestionCount,
+} from "@/features/platform/question-count";
 
 export type RoomRow = typeof gameRooms.$inferSelect;
 
@@ -86,10 +90,15 @@ export async function getRoom(code: string) {
 export async function createRoom(
   hostName: string,
   gameSlug: string,
+   questionCount: QuestionCount =
+    DEFAULT_QUESTION_COUNT,
 ) {
   const db = getDb();
   const token = createPlayerToken();
-  const gameState = createInitialGameState(gameSlug);
+  const gameState = createInitialGameState(
+    gameSlug,
+    questionCount,
+  );
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const code = createRoomCode();
     const now = new Date().toISOString();

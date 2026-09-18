@@ -9,6 +9,11 @@ import {
 
 import type { MostLikelyRoomView } from "@/features/games/siapa-yang-lebih/room-view";
 import { useMostLikelyRoom } from "@/features/games/siapa-yang-lebih/use-most-likely-room";
+import { QuestionCountPicker } from "@/features/platform/components/question-count-picker";
+import {
+  DEFAULT_QUESTION_COUNT,
+  type QuestionCount,
+} from "@/features/platform/question-count";
 import type { PlayerRole } from "@/features/platform/room/types";
 
 function playerName(
@@ -88,10 +93,14 @@ export default function MostLikelyGame() {
 
   const [name, setName] = useState("");
   const [roomCode, setRoomCode] = useState("");
+  const [questionCount, setQuestionCount] =
+    useState<QuestionCount>(
+      DEFAULT_QUESTION_COUNT,
+    );
 
   function handleCreate(event: FormEvent) {
     event.preventDefault();
-    void createRoom(name);
+    void createRoom(name, questionCount);
   }
 
   function handleOpen(event: FormEvent) {
@@ -152,6 +161,12 @@ export default function MostLikelyGame() {
               required
               placeholder="Misalnya: Ara"
               className="mt-2 w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 outline-none focus:border-pink-400"
+            />
+
+            <QuestionCountPicker
+              value={questionCount}
+              onChange={setQuestionCount}
+              disabled={busy}
             />
 
             <button

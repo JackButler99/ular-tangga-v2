@@ -9,6 +9,11 @@ import {
 import type { QuizRoomView } from "@/features/games/seberapa-kenal/room-view";
 import { COUPLE_QUIZ_SLUG } from "@/features/platform/game-registry";
 
+import {
+  DEFAULT_QUESTION_COUNT,
+  type QuestionCount,
+} from "@/features/platform/question-count";
+
 const TOKEN_KEY = "main-berdua-quiz-player";
 
 export type QuizClientAction =
@@ -174,7 +179,11 @@ export function useQuizRoom() {
     token,
   ]);
 
-  async function createRoom(name: string) {
+  async function createRoom(
+    name: string,
+    questionCount: QuestionCount =DEFAULT_QUESTION_COUNT,
+  ) 
+  {
     setBusy(true);
     setError("");
 
@@ -187,6 +196,7 @@ export function useQuizRoom() {
         body: JSON.stringify({
           hostName: name,
           gameSlug: COUPLE_QUIZ_SLUG,
+          questionCount,
         }),
       });
 

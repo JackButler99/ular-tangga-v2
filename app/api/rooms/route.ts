@@ -7,12 +7,17 @@ import {
   cleanName,
   createRoom,
 } from "@/lib/rooms";
+import {
+  DEFAULT_QUESTION_COUNT,
+  isQuestionCount,
+} from "@/features/platform/question-count";
 
 export async function POST(request: Request) {
   try {
     const payload = (await request.json()) as {
       hostName?: unknown;
       gameSlug?: unknown;
+      questionCount?: unknown;
     };
 
     const hostName = cleanName(payload.hostName);
@@ -43,10 +48,31 @@ export async function POST(request: Request) {
         },
       );
     }
+    if (
+      payload.questionCount !== undefined &&
+      !isQuestionCount(payload.questionCount)
+    ) {
+      return Response.json(
+        {
+          error:
+            "Jumlah pertanyaan harus 5, 10, atau 15.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
 
+    const questionCount = isQuestionCount(
+      payload.questionCount,
+    )
+      ? payload.questionCount
+      : DEFAULT_QUESTION_COUNT;
+    
     const { room, token } = await createRoom(
       hostName,
       gameSlug,
+      questionCount,
     );
 
     return Response.json(

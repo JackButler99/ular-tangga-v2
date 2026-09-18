@@ -10,6 +10,10 @@ import {
 import type { MostLikelyRoomView } from "@/features/games/siapa-yang-lebih/room-view";
 import { MOST_LIKELY_SLUG } from "@/features/platform/game-registry";
 import type { PlayerRole } from "@/features/platform/room/types";
+import {
+  DEFAULT_QUESTION_COUNT,
+  type QuestionCount,
+} from "@/features/platform/question-count";
 
 const TOKEN_KEY = "main-berdua-most-likely-player";
 
@@ -176,7 +180,10 @@ export function useMostLikelyRoom() {
     token,
   ]);
 
-  async function createRoom(name: string) {
+  async function createRoom(
+    name: string,
+    questionCount: QuestionCount =DEFAULT_QUESTION_COUNT,
+  ) {
     setBusy(true);
     setError("");
 
@@ -189,6 +196,7 @@ export function useMostLikelyRoom() {
         body: JSON.stringify({
           hostName: name,
           gameSlug: MOST_LIKELY_SLUG,
+          questionCount,
         }),
       });
 
