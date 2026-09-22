@@ -1,4 +1,12 @@
 import {
+  applyConnectionRoomAction,
+  isConnectionRoomAction,
+} from "@/features/games/connection-games/room-actions";
+import {
+  applyLongingMazeAction,
+  isLongingMazeAction,
+} from "@/features/games/labirin-rindu/room-actions";
+import {
   applyQuizRoomAction,
   type QuizRoomAction,
 } from "@/features/games/seberapa-kenal/room-actions";
@@ -8,6 +16,8 @@ import {
 } from "@/features/games/siapa-yang-lebih/room-actions";
 import {
   COUPLE_QUIZ_SLUG,
+  isConnectionGameSlug,
+  LONGING_MAZE_SLUG,
   MOST_LIKELY_SLUG,
   SNAKE_LADDER_SLUG,
 } from "@/features/platform/game-registry";
@@ -134,6 +144,11 @@ export async function POST(
       guestName?: unknown;
       answerIndex?: unknown;
       answer?: unknown;
+      useBet?: unknown;
+      directions?: unknown;
+      trustSteps?: unknown;
+      skillId?: unknown;
+      protection?: unknown;
     };
 
     const token = tokenFrom(request);
@@ -188,6 +203,46 @@ export async function POST(
         token,
         payload.action,
         payload.answer,
+      );
+
+      return Response.json(
+        toGameRoomView(updated, token),
+      );
+    }
+
+    if (
+      isConnectionGameSlug(room.gameSlug) &&
+      isConnectionRoomAction(payload.action)
+    ) {
+      const updated = await applyConnectionRoomAction(
+        room,
+        token,
+        payload.action,
+        {
+          answer: payload.answer,
+          useBet: payload.useBet,
+        },
+      );
+
+      return Response.json(
+        toGameRoomView(updated, token),
+      );
+    }
+
+    if (
+      room.gameSlug === LONGING_MAZE_SLUG &&
+      isLongingMazeAction(payload.action)
+    ) {
+      const updated = await applyLongingMazeAction(
+        room,
+        token,
+        payload.action,
+        {
+          directions: payload.directions,
+          trustSteps: payload.trustSteps,
+          skillId: payload.skillId,
+          protection: payload.protection,
+        },
       );
 
       return Response.json(

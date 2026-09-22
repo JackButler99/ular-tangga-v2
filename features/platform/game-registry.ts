@@ -14,6 +14,23 @@ export type GameCatalogItem = {
 export const SNAKE_LADDER_SLUG = "ular-tangga"
 export const COUPLE_QUIZ_SLUG = "seberapa-kenal";
 export const MOST_LIKELY_SLUG = "siapa-yang-lebih";
+export const PICK_ONE_SLUG = "pilih-mana";
+export const LONGING_MAZE_SLUG = "labirin-rindu";
+
+export const CONNECTION_GAME_SLUGS = [
+  PICK_ONE_SLUG,
+] as const;
+
+export type ConnectionGameSlug =
+  (typeof CONNECTION_GAME_SLUGS)[number];
+
+export function isConnectionGameSlug(
+  value: string,
+): value is ConnectionGameSlug {
+  return CONNECTION_GAME_SLUGS.some(
+    (slug) => slug === value,
+  );
+}
 
 export const GAME_CATALOG: readonly GameCatalogItem[] = [
   {
@@ -47,6 +64,28 @@ export const GAME_CATALOG: readonly GameCatalogItem[] = [
     symbol: "↔",
     status: "available",
     href: "/games/siapa-yang-lebih",
+  },
+  {
+    slug: PICK_ONE_SLUG,
+    title: "Pilih Mana?",
+    description:
+      "Pilih satu dari dua kemungkinan secara rahasia, lalu lihat seberapa sering hati kalian sejalan.",
+    mood: "Cepat & mengejutkan",
+    duration: "5–10 menit",
+    symbol: "◇",
+    status: "available",
+    href: "/games/pilih-mana",
+  },
+  {
+    slug: LONGING_MAZE_SLUG,
+    title: "Labirin Rindu: Penjaga Hati",
+    description:
+      "RPG cinta terbalik: temukan skill dan lindungi pasangan dari bahaya yang hanya dapat kamu lihat.",
+    mood: "RPG kooperatif & strategis",
+    duration: "15–20 menit",
+    symbol: "🛡️",
+    status: "available",
+    href: "/games/labirin-rindu",
   },
 ];
 
