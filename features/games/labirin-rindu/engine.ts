@@ -867,9 +867,10 @@ export function walkMazeRoute(
   const definition = generateMazeDefinition(state.seed);
 
   let nextState: LongingMazeState = {
-    ...state,
-    guidance: null,
-  };
+  ...state,
+  guidance: null,
+  light: Math.max(0, state.light - 1),
+};
 
   let position = {
     ...state.positions[actor],
@@ -895,8 +896,7 @@ export function walkMazeRoute(
 
     nextState = {
       ...nextState,
-      light: nextState.light - 1,
-      movesUsed: nextState.movesUsed + 1,
+            movesUsed: nextState.movesUsed + 1,
     };
 
     const openings =
@@ -1064,10 +1064,6 @@ export function walkMazeRoute(
         }),
       };
 
-      break;
-    }
-
-    if (nextState.light <= 0) {
       break;
     }
   }
