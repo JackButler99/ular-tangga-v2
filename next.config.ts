@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ["192.168.100.13"],
+  allowedDevOrigins: ["10.26.69.182"],
 
   async redirects() {
     return [

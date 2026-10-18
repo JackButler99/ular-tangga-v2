@@ -1588,6 +1588,13 @@ export default function LongingMazeGame() {
     };
     return (
       <Shell>
+        {won && (
+          <MazeFinishCelebration
+            key={`${room.code}-maze-finished`}
+            hostName={room.players.host}
+            guestName={room.players.guest ?? "Pasangan"}
+          />
+        )}
         {lost && (
           <MazeFailureScene
             key={`${room.code}-maze-failed`}
@@ -1665,16 +1672,6 @@ export default function LongingMazeGame() {
 
   return (
     <Shell>
-      {won && (
-        <MazeFinishCelebration
-          key={`${room.code}-maze-finished`}
-          hostName={room.players.host}
-          guestName={
-            room.players.guest ?? "Pasangan"
-          }
-        />
-      )}
-
       <header className="mt-9 flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-black tracking-[0.2em] text-rose-300">
