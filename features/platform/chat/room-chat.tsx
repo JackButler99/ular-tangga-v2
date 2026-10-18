@@ -10,12 +10,18 @@ import {
 } from "react";
 
 import { MAX_CHAT_MESSAGE_LENGTH } from "@/features/platform/chat/message";
+import { useAppLanguage } from "@/features/platform/i18n/language-provider";
+import { localeTag } from "@/features/platform/i18n/locale";
+import { localizeRuntimeText } from "@/features/platform/i18n/runtime-text";
 import type { PlayerRole } from "@/features/platform/room/types";
 
 const TOKEN_KEYS = [
   "jarak-dadu-player",
   "main-berdua-quiz-player",
   "main-berdua-most-likely-player",
+  "main-berdua-connection-player",
+  "main-berdua-longing-maze-player",
+  "main-berdua-cryptogram-player",
 ] as const;
 
 const CHAT_POLL_INTERVAL = 1800;
@@ -76,14 +82,17 @@ function detectSession(): ChatSession | null {
   return null;
 }
 
-function formatMessageTime(value: string) {
+function formatMessageTime(
+  value: string,
+  languageTag: string,
+) {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
     return "";
   }
 
-  return new Intl.DateTimeFormat("id-ID", {
+  return new Intl.DateTimeFormat(languageTag, {
     hour: "2-digit",
     minute: "2-digit",
   }).format(date);
@@ -94,6 +103,7 @@ function initialFrom(name: string) {
 }
 
 export function RoomChat() {
+  const { locale, pick } = useAppLanguage();
   const [session, setSession] =
     useState<ChatSession | null>(null);
 
@@ -237,7 +247,8 @@ export function RoomChat() {
 
     if (!response.ok) {
       throw new Error(
-        payload.error ?? "Chat belum dapat dimuat.",
+        payload.error ??
+          pick("Chat belum dapat dimuat.", "Unable to load chat."),
       );
     }
 
@@ -270,7 +281,7 @@ export function RoomChat() {
           message.senderRole !== nextViewerRole,
       ).length,
     );
-  }, [session]);
+  }, [pick, session]);
 
   useEffect(() => {
     if (!session) {
@@ -292,7 +303,10 @@ export function RoomChat() {
           setError(
             caught instanceof Error
               ? caught.message
-              : "Chat belum dapat dimuat.",
+              : pick(
+                  "Chat belum dapat dimuat.",
+                  "Unable to load chat.",
+                ),
           );
         }
       } finally {
@@ -316,7 +330,7 @@ export function RoomChat() {
         window.clearTimeout(timeout);
       }
     };
-  }, [loadMessages, session]);
+  }, [loadMessages, pick, session]);
 
   async function sendMessage(event: FormEvent) {
     event.preventDefault();
@@ -351,7 +365,10 @@ export function RoomChat() {
       if (!response.ok || !payload.message) {
         throw new Error(
           payload.error ??
-            "Pesan belum berhasil dikirim.",
+            pick(
+              "Pesan belum berhasil dikirim.",
+              "The message could not be sent.",
+            ),
         );
       }
 
@@ -382,7 +399,10 @@ export function RoomChat() {
       setError(
         caught instanceof Error
           ? caught.message
-          : "Pesan belum berhasil dikirim.",
+          : pick(
+              "Pesan belum berhasil dikirim.",
+              "The message could not be sent.",
+            ),
       );
     } finally {
       setSending(false);
@@ -431,8 +451,11 @@ export function RoomChat() {
         className="fixed bottom-5 right-5 z-[100] flex h-14 items-center gap-3 rounded-full border border-white/15 bg-[#17101d]/95 px-4 text-white shadow-2xl shadow-black/50 backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-pink-400/40 hover:bg-[#211426] focus:outline-none focus:ring-2 focus:ring-pink-400/70 sm:bottom-6 sm:right-6"
         aria-label={
           unread > 0
-            ? `Buka chat, ${unread} pesan baru`
-            : "Buka chat"
+            ? pick(
+                `Buka chat, ${unread} pesan baru`,
+                `Open chat, ${unread} new ${unread === 1 ? "message" : "messages"}`,
+              )
+            : pick("Buka chat", "Open chat")
         }
       >
         <span className="relative grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-pink-500 to-violet-600 text-lg shadow-lg shadow-pink-950/40">
@@ -446,7 +469,7 @@ export function RoomChat() {
         </span>
 
         <span className="hidden pr-1 text-sm font-bold sm:block">
-          Chat
+          {pick("Chat", "Chat")}
         </span>
       </button>
     );
@@ -456,14 +479,17 @@ export function RoomChat() {
     <>
       <button
         type="button"
-        aria-label="Tutup chat"
+        aria-label={pick("Tutup chat", "Close chat")}
         onClick={closeChat}
         className="fixed inset-0 z-[99] bg-black/55 backdrop-blur-[2px] sm:hidden"
       />
 
       <aside
         role="dialog"
-        aria-label={`Chat room ${session.code}`}
+        aria-label={pick(
+          `Chat room ${session.code}`,
+          `Room ${session.code} chat`,
+        )}
         className="fixed inset-x-3 bottom-3 z-[100] flex h-[min(78svh,620px)] flex-col overflow-hidden rounded-[28px] border border-white/10 bg-[#110d16]/95 text-white shadow-2xl shadow-black/60 backdrop-blur-2xl sm:inset-x-auto sm:bottom-6 sm:right-6 sm:h-[min(72svh,620px)] sm:w-[390px]"
       >
         <header className="flex items-center gap-3 border-b border-white/10 bg-white/[0.04] px-4 py-4">
@@ -475,11 +501,14 @@ export function RoomChat() {
 
           <div className="min-w-0 flex-1">
             <h2 className="font-black">
-              Chat berdua
+              {pick("Chat berdua", "Private chat")}
             </h2>
 
             <p className="mt-0.5 truncate text-xs text-zinc-500">
-              Room {session.code} · aktif selama bermain
+              {pick(
+                `Room ${session.code} · aktif selama bermain`,
+                `Room ${session.code} · available during the game`,
+              )}
             </p>
           </div>
 
@@ -487,7 +516,7 @@ export function RoomChat() {
             type="button"
             onClick={closeChat}
             className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-xl text-zinc-400 transition hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-pink-400/60"
-            aria-label="Tutup chat"
+            aria-label={pick("Tutup chat", "Close chat")}
           >
             ×
           </button>
@@ -499,7 +528,7 @@ export function RoomChat() {
               <span className="h-6 w-6 animate-spin rounded-full border-2 border-white/15 border-t-pink-400" />
 
               <p className="mt-3 text-sm text-zinc-500">
-                Membuka percakapan…
+                {pick("Membuka percakapan…", "Loading conversation…")}
               </p>
             </div>
           ) : messages.length === 0 ? (
@@ -509,12 +538,14 @@ export function RoomChat() {
               </div>
 
               <h3 className="mt-5 font-black">
-                Mulai percakapan
+                {pick("Mulai percakapan", "Start a conversation")}
               </h3>
 
               <p className="mt-2 max-w-xs text-sm leading-6 text-zinc-500">
-                Kirim pesan singkat tanpa meninggalkan
-                ruang permainan.
+                {pick(
+                  "Kirim pesan singkat tanpa meninggalkan ruang permainan.",
+                  "Send a message without leaving the game room.",
+                )}
               </p>
             </div>
           ) : (
@@ -549,7 +580,7 @@ export function RoomChat() {
                     >
                       <span className="mb-1 px-1 text-[10px] font-semibold text-zinc-600">
                         {mine
-                          ? "Kamu"
+                          ? pick("Kamu", "You")
                           : message.senderName}
                       </span>
 
@@ -568,6 +599,7 @@ export function RoomChat() {
                       <time className="mt-1 px-1 text-[10px] text-zinc-700">
                         {formatMessageTime(
                           message.createdAt,
+                          localeTag(locale),
                         )}
                       </time>
                     </div>
@@ -586,7 +618,7 @@ export function RoomChat() {
               role="alert"
               className="mb-2 rounded-xl border border-red-400/15 bg-red-400/10 px-3 py-2 text-xs text-red-200"
             >
-              {error}
+              {localizeRuntimeText(locale, error)}
             </p>
           )}
 
@@ -603,13 +635,15 @@ export function RoomChat() {
                 onKeyDown={handleComposerKeyDown}
                 maxLength={MAX_CHAT_MESSAGE_LENGTH}
                 rows={1}
-                placeholder="Tulis pesan…"
+                placeholder={pick("Tulis pesan…", "Write a message…")}
                 className="max-h-24 min-h-6 w-full resize-none bg-transparent text-sm leading-6 text-white outline-none placeholder:text-zinc-600"
-                aria-label="Pesan chat"
+                aria-label={pick("Pesan chat", "Chat message")}
               />
 
               <div className="mt-1 flex items-center justify-between text-[10px] text-zinc-700">
-                <span>Enter untuk kirim</span>
+                <span>
+                  {pick("Enter untuk kirim", "Press Enter to send")}
+                </span>
 
                 <span>
                   {draft.length}/
@@ -622,7 +656,7 @@ export function RoomChat() {
               type="submit"
               disabled={!draft.trim() || sending}
               className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 text-lg font-black shadow-lg shadow-pink-950/40 transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-pink-300 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
-              aria-label="Kirim pesan"
+              aria-label={pick("Kirim pesan", "Send message")}
             >
               {sending ? (
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />

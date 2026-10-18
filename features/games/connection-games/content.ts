@@ -1,3 +1,7 @@
+import type { AppLocale } from "@/features/platform/i18n/locale";
+
+import { PICK_ONE_ROUNDS_EN } from "./content.en";
+
 export type PickOneAnswer = "a" | "b";
 
 export type PickOneChapter =
@@ -133,4 +137,36 @@ export function getPickOneRound(id: string) {
   }
 
   return round;
+}
+export function getLocalizedPickOneRound(
+  id: string,
+  locale: AppLocale,
+): PickOneRound {
+  const round = getPickOneRound(id);
+
+  if (locale === "id") {
+    return round;
+  }
+
+  const translation = (
+    PICK_ONE_ROUNDS_EN as Record<
+      string,
+      (typeof PICK_ONE_ROUNDS_EN)[keyof typeof PICK_ONE_ROUNDS_EN]
+    >
+  )[id];
+
+  if (!translation) {
+    return round;
+  }
+
+  return {
+    ...round,
+    category: translation.category,
+    prompt: translation.prompt,
+    options: round.options.map((option, index) => ({
+      ...option,
+      label: translation.options[index as 0 | 1],
+    })) as [PickOneOption, PickOneOption],
+    reflection: translation.reflection,
+  };
 }

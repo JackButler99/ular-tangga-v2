@@ -7,7 +7,9 @@ import { FinishCelebration } from "@/features/games/ular-tangga/components/finis
 import {
   BOARD_CELLS,
   CHALLENGE_POSITIONS,
+  getLocalizedChallenge,
   LADDERS,
+  localizeSnakeHistoryText,
   SNAKES,
   type SnakeLadderRoomView,
 } from "@/features/games/ular-tangga/game";
@@ -17,6 +19,8 @@ import type {
 } from "@/features/platform/room/types";
 
 import { SNAKE_LADDER_SLUG } from "@/features/platform/game-registry";
+import { useAppLanguage } from "@/features/platform/i18n/language-provider";
+import { localizeRuntimeText } from "@/features/platform/i18n/runtime-text";
 
 const TOKEN_KEY = "jarak-dadu-player";
 
@@ -98,6 +102,7 @@ function Board({
   movingRole: PlayerRole | null;
   transitioningRole: PlayerRole | null;
 }) {
+  const { pick } = useAppLanguage();
   const players = [
     {
       role: "host" as const,
@@ -115,7 +120,11 @@ function Board({
 
   return (
     <div className="board-wrap">
-      <div className="board" role="grid" aria-label="Papan ular tangga 100 petak">
+      <div
+        className="board"
+        role="grid"
+        aria-label={pick("Papan ular tangga 100 petak", "A 100-square snakes and ladders board")}
+      >
         {BOARD_CELLS.map((cell) => {
           const ladderTo = LADDERS[cell];
           const snakeTo = SNAKES[cell];
@@ -131,13 +140,18 @@ function Board({
               }`}
               key={cell}
               role="gridcell"
-              aria-label={`Petak ${cell}${ladderTo ? `, tangga menuju ${ladderTo}` : ""}${
-                snakeTo ? `, ular menuju ${snakeTo}` : ""
-              }`}
+              aria-label={pick(
+                `Petak ${cell}${ladderTo ? `, tangga menuju ${ladderTo}` : ""}${
+                  snakeTo ? `, ular menuju ${snakeTo}` : ""
+                }`,
+                `Square ${cell}${ladderTo ? `, ladder to ${ladderTo}` : ""}${
+                  snakeTo ? `, snake to ${snakeTo}` : ""
+                }`,
+              )}
             >
               <span className="cell-number">{cell}</span>
               {isChallenge && !ladderTo && !snakeTo ? (
-                <span className="cell-heart" title="Petak cerita">
+                <span className="cell-heart" title={pick("Petak Cerita", "Story Square")}>
                   ♥
                 </span>
               ) : null}
@@ -149,7 +163,10 @@ function Board({
                         movingRole === player.role ? "is-moving" : ""
                       } ${transitioningRole === player.role ? "is-transitioning" : ""}`}
                       key={player.role}
-                      title={`${player.name} di petak ${cell}`}
+                      title={pick(
+                        `${player.name} di petak ${cell}`,
+                        `${player.name} on square ${cell}`,
+                      )}
                     >
                       {initials(player.name)}
                     </span>
@@ -179,16 +196,23 @@ function PlayerCard({
   active: boolean;
   isYou: boolean;
 }) {
+  const { pick } = useAppLanguage();
+
   return (
     <article className={`player-card ${active ? "is-active" : ""}`}>
       <span className={`avatar avatar-${role}`}>{initials(name)}</span>
       <span className="player-copy">
         <span className="player-name">
-          {name} {isYou ? <small>kamu</small> : null}
+          {name} {isYou ? <small>{pick("kamu", "you")}</small> : null}
         </span>
-        <span className="player-position">Petak {position}</span>
+        <span className="player-position">
+          {pick("Petak", "Square")} {position}
+        </span>
       </span>
-      <span className="player-progress" aria-label={`Progres ${position} persen`}>
+      <span
+        className="player-progress"
+        aria-label={pick(`Progres ${position} persen`, `${position} percent progress`)}
+      >
         <span style={{ width: `${position}%` }} />
       </span>
     </article>
@@ -214,23 +238,30 @@ function Landing({
   onCreate: (event: FormEvent) => void;
   onOpenRoom: (event: FormEvent) => void;
 }) {
+  const { locale, pick } = useAppLanguage();
+
   return (
     <main className="landing-main">
       <section className="landing-copy">
-        <span className="eyebrow"><span className="status-dot" /> DATE NIGHT, DI MANA PUN</span>
+        <span className="eyebrow">
+          <span className="status-dot" />{" "}
+          {pick("WAKTU BERDUA, DI MANA PUN", "TIME TOGETHER, FROM ANYWHERE")}
+        </span>
         <h1>
-          Satu dadu.<br />
-          Dua kota.<br />
-          <span>Banyak cerita.</span>
+          {pick("Satu dadu.", "One die.")}<br />
+          {pick("Dua tempat.", "Two places.")}<br />
+          <span>{pick("Banyak cerita.", "Many stories.")}</span>
         </h1>
         <p>
-          Ular tangga untuk pasangan yang berjauhan—lengkap dengan petak cerita,
-          tantangan kecil, dan ruang privat yang bisa dibuka dari dua perangkat.
+          {pick(
+            "Ular tangga untuk pasangan yang berjauhan, lengkap dengan Petak Cerita, tantangan singkat, dan ruang privat yang dapat dibuka dari dua perangkat.",
+            "Snakes and ladders for couples who are apart, with Story Squares, short prompts, and a private room accessible from two devices.",
+          )}
         </p>
-        <div className="feature-row" aria-label="Fitur utama">
-          <span>♥ 2 pemain</span>
-          <span>↻ Sinkron otomatis</span>
-          <span>✦ Tanpa akun</span>
+        <div className="feature-row" aria-label={pick("Fitur utama", "Key features")}>
+          <span>{pick("♥ 2 pemain", "♥ 2 players")}</span>
+          <span>{pick("↻ Sinkron otomatis", "↻ Automatic sync")}</span>
+          <span>{pick("✦ Tanpa akun", "✦ No account")}</span>
         </div>
       </section>
 
@@ -242,20 +273,20 @@ function Landing({
             <b className="mini-token two">♥</b>
           </span>
           <span>
-            <small>MULAI PERMAINAN</small>
-            <h2 id="entry-title">Buat ruang berdua</h2>
+            <small>{pick("MULAI PERMAINAN", "START THE GAME")}</small>
+            <h2 id="entry-title">{pick("Buat ruang berdua", "Create a room for two")}</h2>
           </span>
         </div>
 
         <form onSubmit={onCreate} className="entry-form">
-          <label htmlFor="host-name">Nama panggilanmu</label>
+          <label htmlFor="host-name">{pick("Nama panggilanmu", "Your display name")}</label>
           <div className="input-shell">
             <span aria-hidden="true">☺</span>
             <input
               id="host-name"
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="Misalnya: Ara"
+              placeholder={pick("Misalnya: Ara", "For example: Alex")}
               minLength={2}
               maxLength={20}
               autoComplete="nickname"
@@ -263,25 +294,41 @@ function Landing({
             />
           </div>
           <button className="primary-button" disabled={busy} type="submit">
-            {busy ? "Menyiapkan ruang…" : "Buat ruang & undang dia"}
+            {busy
+              ? pick("Menyiapkan ruang…", "Creating the room…")
+              : pick("Buat ruang dan kirim undangan", "Create room and send invitation")}
             <span aria-hidden="true">→</span>
           </button>
         </form>
 
-        <div className="divider"><span>atau sudah punya kode?</span></div>
+        <div className="divider">
+          <span>{pick("atau sudah punya kode?", "or already have a code?")}</span>
+        </div>
 
         <form onSubmit={onOpenRoom} className="code-form">
           <input
-            aria-label="Kode ruang"
+            aria-label={pick("Kode ruang", "Room code")}
             value={roomCode}
             onChange={(event) => setRoomCode(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
-            placeholder="KODE RUANG"
+            placeholder={pick("KODE RUANG", "ROOM CODE")}
             maxLength={8}
           />
-          <button type="submit" disabled={busy || roomCode.length < 6}>Gabung</button>
+          <button type="submit" disabled={busy || roomCode.length < 6}>
+            {pick("Gabung", "Join")}
+          </button>
         </form>
-        {error ? <p className="form-error" role="alert">{error}</p> : null}
-        <p className="privacy-note"><span>⌁</span> Ruang hanya bisa dibuka dengan kode undangan.</p>
+        {error ? (
+          <p className="form-error" role="alert">
+            {localizeRuntimeText(locale, error)}
+          </p>
+        ) : null}
+        <p className="privacy-note">
+          <span>⌁</span>{" "}
+          {pick(
+            "Ruang hanya dapat dibuka dengan kode undangan.",
+            "The room can only be opened with an invitation code.",
+          )}
+        </p>
       </section>
     </main>
   );
@@ -304,38 +351,55 @@ function JoinRoom({
   onJoin: (event: FormEvent) => void;
   onBack: () => void;
 }) {
+  const { locale, pick } = useAppLanguage();
   const roomFull = Boolean(room.players.guest);
 
   return (
     <main className="join-main">
       <section className="join-card">
-        <button className="text-button back-button" onClick={onBack} type="button">← Kembali</button>
+        <button className="text-button back-button" onClick={onBack} type="button">
+          ← {pick("Kembali", "Back")}
+        </button>
         <div className="invite-orbit" aria-hidden="true">
           <span className="orbit-avatar host-orbit">{initials(room.players.host.name)}</span>
           <span className="orbit-line"><i>♥</i></span>
           <span className="orbit-avatar guest-orbit">?</span>
         </div>
-        <span className="eyebrow">UNDANGAN BERMAIN</span>
-        <h1>{room.players.host.name} menunggumu.</h1>
+        <span className="eyebrow">{pick("UNDANGAN BERMAIN", "GAME INVITATION")}</span>
+        <h1>
+          {room.players.host.name} {pick("menunggumu.", "is waiting for you.")}
+        </h1>
         <p>
-          Masuk ke ruang <strong>{room.code}</strong> dan mulai perjalanan kecil kalian menuju petak 100.
+          {pick("Masuk ke ruang", "Join room")} <strong>{room.code}</strong>{" "}
+          {pick(
+            "dan mulai perjalanan kalian menuju petak 100.",
+            "and begin your journey to square 100.",
+          )}
         </p>
 
         {roomFull ? (
           <div className="room-full-message">
             <span>●</span>
-            <div><strong>Ruang ini sudah lengkap</strong><small>Buka dari perangkat yang sebelumnya dipakai untuk bermain.</small></div>
+            <div>
+              <strong>{pick("Ruang ini sudah lengkap", "This room is full")}</strong>
+              <small>
+                {pick(
+                  "Buka dari perangkat yang sebelumnya dipakai untuk bermain.",
+                  "Open it from the device previously used to play.",
+                )}
+              </small>
+            </div>
           </div>
         ) : (
           <form onSubmit={onJoin} className="entry-form join-form">
-            <label htmlFor="guest-name">Nama panggilanmu</label>
+            <label htmlFor="guest-name">{pick("Nama panggilanmu", "Your display name")}</label>
             <div className="input-shell">
               <span aria-hidden="true">☺</span>
               <input
                 id="guest-name"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                placeholder="Misalnya: Bima"
+                placeholder={pick("Misalnya: Bima", "For example: Sam")}
                 minLength={2}
                 maxLength={20}
                 autoFocus
@@ -343,18 +407,25 @@ function JoinRoom({
               />
             </div>
             <button className="primary-button" disabled={busy} type="submit">
-              {busy ? "Masuk ke ruang…" : "Gabung & mulai bermain"}
+              {busy
+                ? pick("Masuk ke ruang…", "Joining the room…")
+                : pick("Gabung dan mulai bermain", "Join and start playing")}
               <span aria-hidden="true">→</span>
             </button>
           </form>
         )}
-        {error ? <p className="form-error" role="alert">{error}</p> : null}
+        {error ? (
+          <p className="form-error" role="alert">
+            {localizeRuntimeText(locale, error)}
+          </p>
+        ) : null}
       </section>
     </main>
   );
 }
 
 export default function SnakeLadderGame() {
+  const { locale, pick } = useAppLanguage();
   const [room, setRoom] = useState<SnakeLadderRoomView | null>(null);
   const [token, setToken] = useState("");
   const [name, setName] = useState("");
@@ -407,11 +478,21 @@ export default function SnakeLadderGame() {
 
     setMoving(true);
     setMovingRole(role);
-    setMotionMessage(`${playerName} mendapat angka ${roll}.`);
+    setMotionMessage(
+      pick(
+        `${playerName} mendapat angka ${roll}.`,
+        `${playerName} rolled ${roll}.`,
+      ),
+    );
 
     if (attemptedPosition > 100) {
       setHighlightedCell(startPosition);
-      setMotionMessage(`${playerName} perlu angka yang tepat untuk mencapai petak 100.`);
+      setMotionMessage(
+        pick(
+          `${playerName} perlu angka yang tepat untuk mencapai petak 100.`,
+          `${playerName} needs an exact roll to reach square 100.`,
+        ),
+      );
       await wait(800);
       return;
     }
@@ -419,7 +500,12 @@ export default function SnakeLadderGame() {
     for (let position = startPosition + 1; position <= attemptedPosition; position += 1) {
       setAnimatedPositions({ [role]: position });
       setHighlightedCell(position);
-      setMotionMessage(`${playerName} melangkah ke petak ${position}…`);
+      setMotionMessage(
+        pick(
+          `${playerName} melangkah ke petak ${position}…`,
+          `${playerName} moves to square ${position}…`,
+        ),
+      );
       await wait(175);
     }
 
@@ -428,8 +514,14 @@ export default function SnakeLadderGame() {
       setTransitioningRole(role);
       setMotionMessage(
         transition === "ladder"
-          ? `${playerName} menemukan momen manis!`
-          : `${playerName} terkena salah paham kecil!`,
+          ? pick(
+              `${playerName} menemukan momen manis!`,
+              `${playerName} found a sweet moment!`,
+            )
+          : pick(
+              `${playerName} terkena salah paham kecil!`,
+              `${playerName} encountered a small misunderstanding!`,
+            ),
       );
 
       await wait(520);
@@ -437,15 +529,26 @@ export default function SnakeLadderGame() {
       setHighlightedCell(finalPosition);
       setMotionMessage(
         transition === "ladder"
-          ? `${playerName} naik ke petak ${finalPosition}.`
-          : `${playerName} turun ke petak ${finalPosition}.`,
+          ? pick(
+              `${playerName} naik ke petak ${finalPosition}.`,
+              `${playerName} climbs to square ${finalPosition}.`,
+            )
+          : pick(
+              `${playerName} turun ke petak ${finalPosition}.`,
+              `${playerName} moves down to square ${finalPosition}.`,
+            ),
       );
       await wait(720);
     } else {
-      setMotionMessage(`${playerName} berhenti di petak ${finalPosition}.`);
+      setMotionMessage(
+        pick(
+          `${playerName} berhenti di petak ${finalPosition}.`,
+          `${playerName} stops on square ${finalPosition}.`,
+        ),
+      );
       await wait(420);
     }
-  }, []);
+  }, [pick]);
 
   const clearAnimation = useCallback(() => {
     setRolling(false);
@@ -718,7 +821,7 @@ export default function SnakeLadderGame() {
     return (
       <main className="loading-screen">
         <span className="brand-mark">♥</span>
-        <p>Menyambungkan ruang kalian…</p>
+        <p>{pick("Menyambungkan ruang kalian…", "Connecting your room…")}</p>
       </main>
     );
   }
@@ -768,6 +871,7 @@ export default function SnakeLadderGame() {
   const challengeRole = room.challengeFor ?? room.turn;
   const challengePlayerName = nameForRole(room, challengeRole);
   const challengeIsMine = room.you === challengeRole;
+  const localizedChallenge = getLocalizedChallenge(room.challenge, locale);
 
   return (
     <div className="game-page">
@@ -782,13 +886,15 @@ export default function SnakeLadderGame() {
         <section className="board-card">
           <div className="board-heading">
             <div>
-              <span className="eyebrow"><span className="status-dot" /> RUANG {room.code}</span>
-              <h1>Menuju petak seratus</h1>
+              <span className="eyebrow">
+                <span className="status-dot" /> {pick("RUANG", "ROOM")} {room.code}
+              </span>
+              <h1>{pick("Menuju petak seratus", "The road to square one hundred")}</h1>
             </div>
-            <div className="legend" aria-label="Legenda papan">
-              <span><i className="legend-dot ladder" /> Momen manis</span>
-              <span><i className="legend-dot snake" /> Salah paham</span>
-              <span><i className="legend-heart">♥</i> Cerita</span>
+            <div className="legend" aria-label={pick("Legenda papan", "Board legend")}>
+              <span><i className="legend-dot ladder" /> {pick("Momen manis", "Sweet moment")}</span>
+              <span><i className="legend-dot snake" /> {pick("Salah paham", "Misunderstanding")}</span>
+              <span><i className="legend-heart">♥</i> {pick("Cerita", "Story")}</span>
             </div>
           </div>
           <Board
@@ -799,16 +905,26 @@ export default function SnakeLadderGame() {
             transitioningRole={transitioningRole}
           />
           <div className="board-caption">
-            <span><b>01</b> MULAI DI SINI</span>
-            <span>Petak 100 <b>♥</b></span>
+            <span><b>01</b> {pick("MULAI DI SINI", "START HERE")}</span>
+            <span>{pick("Petak", "Square")} 100 <b>♥</b></span>
           </div>
         </section>
 
         <aside className="game-sidebar">
           <section className="turn-card">
             <div className="turn-card-top">
-              <span className="turn-label">{waiting ? "MENUNGGU PASANGAN" : room.winner ? "PERMAINAN SELESAI" : "GILIRAN SEKARANG"}</span>
-              {!waiting && !room.winner ? <span className="live-pill"><i /> LIVE</span> : null}
+              <span className="turn-label">
+                {waiting
+                  ? pick("MENUNGGU PASANGAN", "WAITING FOR YOUR PARTNER")
+                  : room.winner
+                    ? pick("PERMAINAN SELESAI", "GAME COMPLETE")
+                    : pick("GILIRAN SEKARANG", "CURRENT TURN")}
+              </span>
+              {!waiting && !room.winner ? (
+                <span className="live-pill">
+                  <i /> {pick("AKTIF", "LIVE")}
+                </span>
+              ) : null}
             </div>
 
             <div className="players-stack">
@@ -830,7 +946,10 @@ export default function SnakeLadderGame() {
               ) : (
                 <article className="player-card empty-player">
                   <span className="avatar">?</span>
-                  <span className="player-copy"><span className="player-name">Menunggu dia…</span><span className="player-position">Bagikan tautan ruang</span></span>
+                  <span className="player-copy">
+                    <span className="player-name">{pick("Menunggu pasangan…", "Waiting for your partner…")}</span>
+                    <span className="player-position">{pick("Bagikan tautan ruang", "Share the room link")}</span>
+                  </span>
                 </article>
               )}
             </div>
@@ -842,42 +961,67 @@ export default function SnakeLadderGame() {
                   {motionMessage
                     ? motionMessage
                     : waiting
-                    ? "Kirim undangan dulu"
+                    ? pick("Kirim undangan terlebih dahulu", "Send an invitation first")
                     : room.winner
-                      ? `${room.winner.name} sampai duluan!`
+                      ? pick(
+                          `${room.winner.name} sampai lebih dahulu!`,
+                          `${room.winner.name} arrived first!`,
+                        )
                       : room.challenge
-                        ? `Petak Cerita untuk ${challengePlayerName}`
+                        ? pick(
+                            `Petak Cerita untuk ${challengePlayerName}`,
+                            `Story Square for ${challengePlayerName}`,
+                          )
                       : myTurn
-                        ? "Dadu ada di tanganmu"
-                        : `Menunggu ${currentPlayer?.name ?? "pasangan"}`}
+                        ? pick("Dadu ada di tanganmu", "The die is yours")
+                        : pick(
+                            `Menunggu ${currentPlayer?.name ?? "pasangan"}`,
+                            `Waiting for ${currentPlayer?.name ?? "your partner"}`,
+                          )}
                 </strong>
                 <span>
                   {moving
-                    ? "Ikuti perjalanan pion di papan."
+                    ? pick("Ikuti perjalanan pion di papan.", "Follow the piece across the board.")
                     : waiting
-                      ? "Dia akan muncul di sini saat bergabung."
+                      ? pick(
+                          "Pasanganmu akan muncul di sini setelah bergabung.",
+                          "Your partner will appear here after joining.",
+                        )
                       : room.winner
-                        ? "Kalian berhasil sampai bersama."
+                        ? pick(
+                            "Kalian berhasil menyelesaikan perjalanan ini.",
+                            "You completed this journey together.",
+                          )
                         : room.challenge
-                          ? "Selesaikan tantangannya sebelum giliran berpindah."
+                          ? pick(
+                              "Selesaikan tantangan sebelum giliran berpindah.",
+                              "Complete the prompt before the turn changes.",
+                            )
                           : myTurn
-                            ? "Tekan tombol untuk melangkah."
-                            : "Halaman akan terbarui otomatis."}
+                            ? pick("Tekan tombol untuk melangkah.", "Press the button to move.")
+                            : pick("Halaman akan diperbarui otomatis.", "The page updates automatically.")}
                 </span>
               </div>
             </div>
 
             {waiting ? (
               <button className="invite-button" type="button" onClick={copyInvite}>
-                <span>⧉</span> {copied ? "Tautan tersalin!" : "Salin tautan undangan"}
+                <span>⧉</span>{" "}
+                {copied
+                  ? pick("Tautan tersalin!", "Link copied!")
+                  : pick("Salin tautan undangan", "Copy invitation link")}
               </button>
             ) : room.winner ? (
               room.you === "host" ? (
                 <button className="primary-button roll-button" type="button" onClick={resetGame} disabled={busy}>
-                  {busy ? "Menyiapkan permainan…" : "Main sekali lagi"} <span>↻</span>
+                  {busy
+                    ? pick("Menyiapkan permainan…", "Preparing the game…")
+                    : pick("Main sekali lagi", "Play again")} <span>↻</span>
                 </button>
               ) : (
-                <p className="waiting-reset">Host bisa memulai permainan baru.</p>
+                <p className="waiting-reset">
+                  {pick("Host dapat memulai permainan baru.", "The host can start a new game.")}
+                </p>
               )
             ) : (
               <button
@@ -887,32 +1031,44 @@ export default function SnakeLadderGame() {
                 disabled={!myTurn || rolling || moving || Boolean(room.challenge)}
               >
                 {rolling
-                  ? "Dadu berputar…"
+                  ? pick("Dadu berputar…", "Rolling the die…")
                   : moving
-                    ? "Pion sedang berjalan…"
+                    ? pick("Pion sedang berjalan…", "The piece is moving…")
                     : room.challenge
-                      ? "Selesaikan Petak Cerita"
+                      ? pick("Selesaikan Petak Cerita", "Complete the Story Square")
                       : myTurn
-                        ? "Lempar dadu"
-                        : "Tunggu giliran"}
+                        ? pick("Lempar dadu", "Roll the die")
+                        : pick("Tunggu giliran", "Wait for your turn")}
                 <span aria-hidden="true">⚄</span>
               </button>
             )}
-            {error ? <p className="game-error" role="alert">{error}</p> : null}
+            {error ? (
+              <p className="game-error" role="alert">
+                {localizeRuntimeText(locale, error)}
+              </p>
+            ) : null}
           </section>
 
           <section className={`challenge-card ${room.challenge ? "has-card" : ""}`}>
             <div className="challenge-icon">♥</div>
             <div>
-              <span className="challenge-label">PETAK CERITA</span>
-              <p>{room.challenge ?? "Mendarat di petak ♥ akan membuka pertanyaan atau tantangan kecil untuk kalian."}</p>
+              <span className="challenge-label">
+                {pick("PETAK CERITA", "STORY SQUARE")}
+              </span>
+              <p>
+                {localizedChallenge ??
+                  pick(
+                    "Mendarat di petak ♥ akan membuka pertanyaan atau tantangan singkat untuk kalian.",
+                    "Landing on a ♥ square opens a question or short prompt for both of you.",
+                  )}
+              </p>
             </div>
           </section>
 
           <section className="history-card">
             <div className="section-title-row">
-              <span className="section-title">JEJAK PERMAINAN</span>
-              <span className="sync-copy"><i /> tersinkron</span>
+              <span className="section-title">{pick("JEJAK PERMAINAN", "GAME HISTORY")}</span>
+              <span className="sync-copy"><i /> {pick("tersinkron", "synced")}</span>
             </div>
             <ol className="history-list">
               {room.history.slice(0, 4).map((item, index) => (
@@ -920,7 +1076,10 @@ export default function SnakeLadderGame() {
                   <span className={`history-avatar ${item.role ? `avatar-${item.role}` : ""}`}>
                     {item.role === "host" ? initials(room.players.host.name) : item.role === "guest" && room.players.guest ? initials(room.players.guest.name) : "♥"}
                   </span>
-                  <span><strong>{item.title}</strong><small>{item.detail}</small></span>
+                  <span>
+                    <strong>{localizeSnakeHistoryText(item.title, locale)}</strong>
+                    <small>{localizeSnakeHistoryText(item.detail, locale)}</small>
+                  </span>
                 </li>
               ))}
             </ol>
@@ -937,9 +1096,11 @@ export default function SnakeLadderGame() {
             aria-labelledby="challenge-title"
           >
             <span className="challenge-modal-heart" aria-hidden="true">♥</span>
-            <span className="challenge-modal-label">PETAK CERITA</span>
-            <h2 id="challenge-title">Giliran {challengePlayerName}</h2>
-            <p>{room.challenge}</p>
+            <span className="challenge-modal-label">{pick("PETAK CERITA", "STORY SQUARE")}</span>
+            <h2 id="challenge-title">
+              {pick("Giliran", "Turn:")} {challengePlayerName}
+            </h2>
+            <p>{localizedChallenge}</p>
 
             {challengeIsMine ? (
               <button
@@ -949,23 +1110,34 @@ export default function SnakeLadderGame() {
                 disabled={challengeBusy}
                 autoFocus
               >
-                {challengeBusy ? "Menyimpan…" : "Sudah selesai — lanjutkan"}
+                {challengeBusy
+                  ? pick("Menyimpan…", "Saving…")
+                  : pick("Sudah selesai — lanjutkan", "Complete — continue")}
                 <span aria-hidden="true">→</span>
               </button>
             ) : (
               <div className="challenge-waiting" role="status">
-                <i /> Menunggu {challengePlayerName} menyelesaikannya…
+                <i /> {pick("Menunggu", "Waiting for")} {challengePlayerName}{" "}
+                {pick("menyelesaikannya…", "to complete it…")}
               </div>
             )}
 
-            {error ? <p className="game-error" role="alert">{error}</p> : null}
+            {error ? (
+              <p className="game-error" role="alert">
+                {localizeRuntimeText(locale, error)}
+              </p>
+            ) : null}
           </section>
         </div>
       ) : null}
 
       <footer className="game-footer">
-        <span>Jarak boleh jauh. Giliran tetap dekat.</span>
-        <button type="button" className="text-button" onClick={leaveRoom}>Keluar dari tampilan ruang</button>
+        <span>
+          {pick("Jarak boleh jauh. Giliran tetap dekat.", "Distance apart. Still taking turns together.")}
+        </span>
+        <button type="button" className="text-button" onClick={leaveRoom}>
+          {pick("Keluar dari ruang", "Leave room")}
+        </button>
       </footer>
     </div>
   );
@@ -982,30 +1154,52 @@ function Header({
   onCopy?: () => void;
   copied?: boolean;
 }) {
+  const { pick } = useAppLanguage();
+
   return (
     <header className="site-header">
-      <Link className="brand" href="/" aria-label="Jarak dan Dadu, beranda">
+      <Link
+        className="brand"
+        href="/"
+        aria-label={pick("Jarak dan Dadu, beranda", "Distance and Dice, home")}
+      >
         <span className="brand-mark">♥</span>
-        <span>JARAK <i>&</i> DADU<small>MAIN BARENG, MESKI BERJAUHAN</small></span>
+        <span>
+          {pick("JARAK", "DISTANCE")} <i>&</i> {pick("DADU", "DICE")}
+          <small>
+            {pick("MAIN BERSAMA, MESKI BERJAUHAN", "PLAY TOGETHER FROM APART")}
+          </small>
+        </span>
       </Link>
       {game && room ? (
-        <button className="room-chip" onClick={onCopy} type="button" aria-label="Salin tautan undangan">
-          <span><i /> RUANG</span>
+        <button
+          className="room-chip"
+          onClick={onCopy}
+          type="button"
+          aria-label={pick("Salin tautan undangan", "Copy invitation link")}
+        >
+          <span><i /> {pick("RUANG", "ROOM")}</span>
           <strong>{room.code}</strong>
           <b>{copied ? "✓" : "⧉"}</b>
         </button>
       ) : (
-        <span className="header-note">Dibuat untuk dua hati <i>♥</i></span>
+        <span className="header-note">
+          {pick("Dibuat untuk waktu berdua", "Made for time together")} <i>♥</i>
+        </span>
       )}
     </header>
   );
 }
 
 function Footer() {
+  const { pick } = useAppLanguage();
+
   return (
     <footer className="site-footer">
-      <span>JARAK & DADU © 2026</span>
-      <span>Jarak boleh jauh. Giliran tetap dekat. <i>♥</i></span>
+      <span>{pick("JARAK & DADU", "DISTANCE & DICE")} © 2026</span>
+      <span>
+        {pick("Jarak boleh jauh. Giliran tetap dekat.", "Distance apart. Still taking turns together.")} <i>♥</i>
+      </span>
     </footer>
   );
 }

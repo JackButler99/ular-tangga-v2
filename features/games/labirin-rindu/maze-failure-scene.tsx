@@ -2,6 +2,10 @@
 
 import { type CSSProperties, useState } from "react";
 
+import { useAppLanguage } from "@/features/platform/i18n/language-provider";
+
+import { localizeMazeHistoryText } from "./rpg-content";
+
 type MazeFailureSceneProps = {
   reason: string;
 };
@@ -317,6 +321,7 @@ function WaitingBear({ side }: { side: "left" | "right" }) {
 }
 
 export function MazeFailureScene({ reason }: MazeFailureSceneProps) {
+  const { locale, pick } = useAppLanguage();
   const [open, setOpen] = useState(true);
 
   if (!open) return null;
@@ -325,14 +330,17 @@ export function MazeFailureScene({ reason }: MazeFailureSceneProps) {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Perjalanan Labirin Rindu terhenti"
+      aria-label={pick(
+        "Perjalanan Labirin Rindu terhenti",
+        "The Maze of Longing journey has ended",
+      )}
       className="maze-fail-scene fixed inset-0 z-[9999] grid place-items-center overflow-hidden bg-[radial-gradient(circle_at_50%_43%,rgba(71,85,105,0.24),transparent_34%),linear-gradient(145deg,rgba(5,8,20,0.98),rgba(18,13,31,0.99))] p-3 text-white backdrop-blur-xl"
     >
       <style>{CSS}</style>
 
       <section className="relative isolate max-h-[calc(100dvh-24px)] w-[min(95vw,720px)] overflow-auto rounded-[2rem] border border-slate-300/15 bg-[radial-gradient(circle_at_50%_42%,rgba(251,191,36,0.08),transparent_32%),linear-gradient(160deg,rgba(22,25,43,0.98),rgba(8,12,25,0.99))] px-4 py-6 text-center shadow-[0_34px_120px_rgba(0,0,0,0.65)] sm:px-7">
         <p className="relative z-20 text-[10px] font-black tracking-[0.24em] text-slate-400">
-          CAHAYA BELUM SAMPAI
+          {pick("CAHAYA BELUM SAMPAI", "THE LIGHT DID NOT REACH THE END")}
         </p>
 
         <div
@@ -394,20 +402,23 @@ export function MazeFailureScene({ reason }: MazeFailureSceneProps) {
 
         <div className="maze-fail-copy relative z-20">
           <h2 className="mx-auto max-w-xl text-[clamp(27px,6vw,40px)] font-black leading-[1.08]">
-            Jalan kalian belum bertemu.
+            {pick("Jalan kalian belum bertemu.", "Your paths have not met yet.")}
           </h2>
           <p className="mx-auto mt-3 max-w-lg text-sm leading-7 text-slate-300">
-            Kabut menutup rute kali ini. Namun setiap arah, perlindungan, dan keputusan yang kalian bagi sudah menjadi petunjuk untuk perjalanan berikutnya.
+            {pick(
+              "Kabut menutup rute kali ini. Setiap arah, perlindungan, dan keputusan yang kalian bagi dapat menjadi petunjuk untuk perjalanan berikutnya.",
+              "The fog closed this route. Every direction, protection, and shared decision can guide your next journey.",
+            )}
           </p>
           <p className="mx-auto mt-4 max-w-lg rounded-2xl border border-amber-200/15 bg-amber-300/[0.06] px-4 py-3 text-xs leading-5 text-amber-100/75">
-            {reason}
+            {localizeMazeHistoryText(reason, locale)}
           </p>
           <button
             type="button"
             onClick={() => setOpen(false)}
             className="mt-6 w-full rounded-2xl border border-white/15 bg-white/[0.07] px-5 py-3.5 font-black transition hover:-translate-y-0.5 hover:bg-white/[0.11] active:scale-[0.98]"
           >
-            Lihat jejak perjalanan
+            {pick("Lihat jejak perjalanan", "Review the journey")}
           </button>
         </div>
       </section>

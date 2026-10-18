@@ -10,11 +10,15 @@ import {
 import type { MostLikelyRoomView } from "@/features/games/siapa-yang-lebih/room-view";
 import { useMostLikelyRoom } from "@/features/games/siapa-yang-lebih/use-most-likely-room";
 import { QuestionCountPicker } from "@/features/platform/components/question-count-picker";
+import { useAppLanguage } from "@/features/platform/i18n/language-provider";
+import { localizeRuntimeText } from "@/features/platform/i18n/runtime-text";
 import {
   DEFAULT_QUESTION_COUNT,
   type QuestionCount,
 } from "@/features/platform/question-count";
 import type { PlayerRole } from "@/features/platform/room/types";
+
+import { getLocalizedMostLikelyQuestion } from "./questions";
 
 function playerName(
   room: MostLikelyRoomView,
@@ -30,6 +34,8 @@ function initialFrom(name: string | null | undefined) {
 }
 
 function Shell({ children }: { children: ReactNode }) {
+  const { pick } = useAppLanguage();
+
   return (
     <main className="relative min-h-[100svh] overflow-hidden bg-[#0c070c] px-4 py-5 text-white sm:px-6 sm:py-8">
       <div className="pointer-events-none absolute -left-36 -top-28 h-96 w-96 rounded-full bg-pink-600/20 blur-[110px]" />
@@ -44,7 +50,7 @@ function Shell({ children }: { children: ReactNode }) {
           className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 text-sm font-medium text-zinc-300 backdrop-blur-xl transition hover:border-white/20 hover:bg-white/[0.08] hover:text-white focus:outline-none focus:ring-2 focus:ring-pink-400/60"
         >
           <span aria-hidden="true">←</span>
-          <span>Kembali ke katalog</span>
+          <span>{pick("Kembali ke katalog", "Back to games")}</span>
         </Link>
 
         {children}
@@ -54,6 +60,8 @@ function Shell({ children }: { children: ReactNode }) {
 }
 
 function ErrorNotice({ message }: { message: string }) {
+  const { locale } = useAppLanguage();
+
   if (!message) {
     return null;
   }
@@ -70,7 +78,7 @@ function ErrorNotice({ message }: { message: string }) {
         !
       </span>
 
-      <p>{message}</p>
+      <p>{localizeRuntimeText(locale, message)}</p>
     </div>
   );
 }
@@ -113,6 +121,7 @@ function PlayerChoices({
   disabled: boolean;
   onChoose: (role: PlayerRole) => void;
 }) {
+  const { pick } = useAppLanguage();
   const roles: PlayerRole[] = ["host", "guest"];
 
   return (
@@ -136,7 +145,7 @@ function PlayerChoices({
 
             <div className="min-w-0">
               <span className="text-xs font-bold uppercase tracking-[0.16em] text-zinc-500 transition group-hover:text-pink-300">
-                Pilih
+                {pick("Pilih", "Choose")}
               </span>
 
               <strong className="mt-1 block truncate text-lg">
@@ -155,6 +164,8 @@ function PlayerChoices({
 }
 
 function LoadingScreen() {
+  const { pick } = useAppLanguage();
+
   return (
     <Shell>
       <div className="flex min-h-[70svh] flex-col items-center justify-center text-center">
@@ -167,11 +178,11 @@ function LoadingScreen() {
         </div>
 
         <p className="mt-6 font-semibold">
-          Membuka ruang bermain
+          {pick("Membuka ruang bermain", "Opening the game room")}
         </p>
 
         <p className="mt-2 text-sm text-zinc-500">
-          Menyiapkan pertanyaan kalian…
+          {pick("Menyiapkan pertanyaan kalian…", "Preparing your questions…")}
         </p>
       </div>
     </Shell>
@@ -179,6 +190,7 @@ function LoadingScreen() {
 }
 
 export default function MostLikelyGame() {
+  const { locale, pick } = useAppLanguage();
   const {
     room,
     busy,
@@ -230,29 +242,31 @@ export default function MostLikelyGame() {
 
             <div className="mt-7 inline-flex items-center gap-2 rounded-full border border-pink-400/20 bg-pink-400/10 px-3 py-1.5 text-xs font-bold tracking-[0.18em] text-pink-200">
               <span className="h-1.5 w-1.5 rounded-full bg-pink-300" />
-              PILIH DIAM-DIAM
+              {pick("PILIH DIAM-DIAM", "CHOOSE PRIVATELY")}
             </div>
 
             <h1 className="mt-5 bg-gradient-to-r from-white via-pink-100 to-rose-200 bg-clip-text text-4xl font-black leading-tight text-transparent sm:text-6xl">
-              Siapa yang Lebih?
+              {pick("Siapa yang Lebih?", "Who Is More Likely?")}
             </h1>
 
             <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-zinc-400 sm:text-lg">
-              Bandingkan cara kalian melihat satu sama lain.
-              Pilih diam-diam, lalu buka jawabannya bersama.
+              {pick(
+                "Bandingkan cara kalian melihat satu sama lain. Pilih secara pribadi, lalu lihat hasilnya bersama.",
+                "Compare how you see one another. Choose privately, then reveal the results together.",
+              )}
             </p>
 
             <div className="mt-6 flex flex-wrap justify-center gap-2 text-xs text-zinc-400">
               <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5">
-                👥 2 pemain
+                {pick("👥 2 pemain", "👥 2 players")}
               </span>
 
               <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5">
-                ⚡ 5–15 pertanyaan
+                {pick("⚡ 5–15 pertanyaan", "⚡ 5–15 questions")}
               </span>
 
               <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5">
-                🙈 Pilihan rahasia
+                {pick("🙈 Pilihan pribadi", "🙈 Private choices")}
               </span>
             </div>
           </header>
@@ -260,11 +274,11 @@ export default function MostLikelyGame() {
           <section className="mx-auto mt-10 max-w-xl overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.055] shadow-2xl shadow-black/30 backdrop-blur-2xl">
             <div className="border-b border-white/10 bg-gradient-to-r from-pink-500/10 to-rose-500/5 px-6 py-5 sm:px-8">
               <p className="text-xs font-bold tracking-[0.18em] text-pink-300">
-                MULAI DATE NIGHT
+                {pick("MULAI BERMAIN", "START PLAYING")}
               </p>
 
               <h2 className="mt-2 text-xl font-bold">
-                Buat ruang baru
+                {pick("Buat ruang baru", "Create a new room")}
               </h2>
             </div>
 
@@ -276,7 +290,7 @@ export default function MostLikelyGame() {
                 htmlFor="create-name"
                 className="text-sm font-semibold text-zinc-200"
               >
-                Nama panggilanmu
+                {pick("Nama panggilanmu", "Your display name")}
               </label>
 
               <input
@@ -289,7 +303,7 @@ export default function MostLikelyGame() {
                 maxLength={20}
                 required
                 autoComplete="nickname"
-                placeholder="Misalnya: Ara"
+                placeholder={pick("Misalnya: Ara", "For example: Alex")}
                 className="mt-2 h-13 w-full rounded-2xl border border-white/10 bg-black/20 px-4 text-white outline-none transition placeholder:text-zinc-600 focus:border-pink-400/60 focus:bg-black/30 focus:ring-4 focus:ring-pink-500/10"
               />
 
@@ -309,11 +323,11 @@ export default function MostLikelyGame() {
                 {busy ? (
                   <>
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                    Menyiapkan…
+                    {pick("Menyiapkan…", "Creating…")}
                   </>
                 ) : (
                   <>
-                    Buat room
+                    {pick("Buat ruang", "Create room")}
                     <span aria-hidden="true">→</span>
                   </>
                 )}
@@ -324,7 +338,7 @@ export default function MostLikelyGame() {
               <div className="h-px flex-1 bg-white/10" />
 
               <span className="text-xs font-medium text-zinc-600">
-                ATAU
+                {pick("ATAU", "OR")}
               </span>
 
               <div className="h-px flex-1 bg-white/10" />
@@ -338,7 +352,7 @@ export default function MostLikelyGame() {
                 htmlFor="room-code"
                 className="text-sm font-semibold text-zinc-200"
               >
-                Masuk dengan kode room
+                {pick("Masuk dengan kode ruang", "Enter a room code")}
               </label>
 
               <div className="mt-2 flex gap-2">
@@ -355,7 +369,7 @@ export default function MostLikelyGame() {
                   }
                   required
                   autoComplete="off"
-                  placeholder="KODE ROOM"
+                  placeholder={pick("KODE RUANG", "ROOM CODE")}
                   className="h-13 min-w-0 flex-1 rounded-2xl border border-white/10 bg-black/20 px-4 font-mono font-bold uppercase tracking-[0.15em] text-white outline-none transition placeholder:font-sans placeholder:font-normal placeholder:tracking-normal placeholder:text-zinc-600 focus:border-pink-400/60 focus:ring-4 focus:ring-pink-500/10"
                 />
 
@@ -364,7 +378,7 @@ export default function MostLikelyGame() {
                   disabled={busy || roomCode.length < 6}
                   className="min-h-13 rounded-2xl border border-white/10 bg-white/[0.06] px-5 font-bold transition hover:border-pink-400/40 hover:bg-pink-400/10 focus:outline-none focus:ring-2 focus:ring-pink-400/60 disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  Buka
+                  {pick("Buka", "Open")}
                 </button>
               </div>
             </form>
@@ -391,19 +405,19 @@ export default function MostLikelyGame() {
               </div>
 
               <p className="mt-5 text-xs font-black tracking-[0.2em] text-pink-200">
-                UNDANGAN BERMAIN
+                {pick("UNDANGAN BERMAIN", "GAME INVITATION")}
               </p>
 
               <h1 className="mt-3 text-3xl font-black">
                 {room.players.host}
                 <span className="block text-zinc-400">
-                  mengundangmu
+                  {pick("mengundangmu", "invited you")}
                 </span>
               </h1>
 
               <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-4 py-2">
                 <span className="text-xs text-zinc-500">
-                  ROOM
+                  {pick("RUANG", "ROOM")}
                 </span>
 
                 <strong className="font-mono tracking-[0.18em]">
@@ -416,11 +430,14 @@ export default function MostLikelyGame() {
               {roomFull ? (
                 <div className="rounded-2xl border border-amber-400/20 bg-amber-400/10 p-5 text-center">
                   <p className="font-bold text-amber-100">
-                    Room sudah penuh
+                    {pick("Ruang sudah penuh", "This room is full")}
                   </p>
 
                   <p className="mt-2 text-sm leading-6 text-amber-100/60">
-                    Room ini sudah memiliki dua pemain.
+                    {pick(
+                      "Ruang ini sudah memiliki dua pemain.",
+                      "This room already has two players.",
+                    )}
                   </p>
                 </div>
               ) : (
@@ -429,7 +446,7 @@ export default function MostLikelyGame() {
                     htmlFor="join-name"
                     className="text-sm font-semibold text-zinc-200"
                   >
-                    Nama panggilanmu
+                    {pick("Nama panggilanmu", "Your display name")}
                   </label>
 
                   <input
@@ -442,7 +459,7 @@ export default function MostLikelyGame() {
                     maxLength={20}
                     required
                     autoComplete="nickname"
-                    placeholder="Misalnya: Bima"
+                    placeholder={pick("Misalnya: Bima", "For example: Sam")}
                     className="mt-2 h-13 w-full rounded-2xl border border-white/10 bg-black/20 px-4 outline-none transition placeholder:text-zinc-600 focus:border-pink-400/60 focus:ring-4 focus:ring-pink-500/10"
                   />
 
@@ -454,11 +471,11 @@ export default function MostLikelyGame() {
                     {busy ? (
                       <>
                         <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                        Bergabung…
+                        {pick("Bergabung…", "Joining…")}
                       </>
                     ) : (
                       <>
-                        Gabung bermain
+                        {pick("Gabung bermain", "Join game")}
                         <span aria-hidden="true">→</span>
                       </>
                     )}
@@ -473,7 +490,7 @@ export default function MostLikelyGame() {
                 onClick={leaveRoom}
                 className="mt-6 w-full text-center text-sm text-zinc-500 transition hover:text-white"
               >
-                Bukan room yang kamu cari?
+                {pick("Bukan ruang yang kamu cari?", "Looking for a different room?")}
               </button>
             </div>
           </section>
@@ -497,21 +514,23 @@ export default function MostLikelyGame() {
 
             <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-bold text-emerald-300">
               <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
-              MENUNGGU PASANGAN
+              {pick("MENUNGGU PASANGAN", "WAITING FOR YOUR PARTNER")}
             </div>
 
             <h1 className="mt-6 text-2xl font-black">
-              Room sudah siap
+              {pick("Ruang sudah siap", "Your room is ready")}
             </h1>
 
             <p className="mt-2 text-sm leading-6 text-zinc-400">
-              Bagikan tautan atau kode berikut kepada
-              pasanganmu.
+              {pick(
+                "Bagikan tautan atau kode berikut kepada pasanganmu.",
+                "Share this link or code with your partner.",
+              )}
             </p>
 
             <div className="mt-7 rounded-3xl border border-dashed border-pink-300/25 bg-pink-400/[0.07] p-6">
               <p className="text-xs font-bold tracking-[0.18em] text-zinc-500">
-                KODE ROOM
+                {pick("KODE RUANG", "ROOM CODE")}
               </p>
 
               <p className="mt-3 font-mono text-4xl font-black tracking-[0.2em] text-pink-100 sm:text-5xl">
@@ -529,13 +548,15 @@ export default function MostLikelyGame() {
               </span>
 
               {copied
-                ? "Tautan berhasil disalin"
-                : "Salin tautan undangan"}
+                ? pick("Tautan berhasil disalin", "Invitation link copied")
+                : pick("Salin tautan undangan", "Copy invitation link")}
             </button>
 
             <p className="mt-5 text-xs text-zinc-600">
-              Permainan otomatis dimulai setelah pasanganmu
-              bergabung.
+              {pick(
+                "Permainan dimulai otomatis setelah pasanganmu bergabung.",
+                "The game starts automatically after your partner joins.",
+              )}
             </p>
 
             <ErrorNotice message={error} />
@@ -545,7 +566,7 @@ export default function MostLikelyGame() {
               onClick={leaveRoom}
               className="mt-6 text-sm text-zinc-500 transition hover:text-white"
             >
-              Keluar dari room
+              {pick("Keluar dari ruang", "Leave room")}
             </button>
           </section>
         </div>
@@ -556,7 +577,12 @@ export default function MostLikelyGame() {
   const game = room.game;
   const viewer = room.you;
   const hostName = room.players.host;
-  const guestName = room.players.guest ?? "Pasangan";
+  const guestName =
+    room.players.guest ?? pick("Pasangan", "Partner");
+
+  const question = game.question
+    ? getLocalizedMostLikelyQuestion(game.question.id, locale)
+    : null;
 
   const hostAnswered =
     game.phase !== "answering" ||
@@ -600,10 +626,16 @@ export default function MostLikelyGame() {
 
   const resultTitle =
     agreementRate >= 80
-      ? "Kalian kompak banget!"
+      ? pick("Kalian sangat selaras.", "You are highly aligned.")
       : agreementRate >= 50
-        ? "Banyak pikiran kalian yang sejalan."
-        : "Perbedaan kalian membuatnya menarik.";
+        ? pick(
+            "Banyak pilihan kalian yang sejalan.",
+            "Many of your choices are aligned.",
+          )
+        : pick(
+            "Perbedaan kalian layak dibicarakan.",
+            "Your differences are worth discussing.",
+          );
 
   return (
     <Shell>
@@ -615,12 +647,12 @@ export default function MostLikelyGame() {
                 <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)]" />
 
                 <p className="truncate text-xs font-bold tracking-[0.16em] text-zinc-400">
-                  ROOM {room.code}
+                  {pick("RUANG", "ROOM")} {room.code}
                 </p>
               </div>
 
               <h1 className="mt-2 truncate text-xl font-black sm:text-2xl">
-                Siapa yang Lebih?
+                {pick("Siapa yang Lebih?", "Who Is More Likely?")}
               </h1>
             </div>
 
@@ -629,7 +661,9 @@ export default function MostLikelyGame() {
               onClick={() => void copyInvite()}
               className="shrink-0 rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-xs font-semibold text-zinc-300 transition hover:border-pink-400/30 hover:bg-pink-400/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-pink-400/60"
             >
-              {copied ? "✓ Tersalin" : "⧉ Undang"}
+              {copied
+                ? pick("✓ Tersalin", "✓ Copied")
+                : pick("⧉ Undang", "⧉ Invite")}
             </button>
           </div>
         </header>
@@ -655,7 +689,7 @@ export default function MostLikelyGame() {
                 </p>
 
                 <p className="text-xs text-zinc-500">
-                  {viewer === "host" ? "Kamu" : "Host"}
+                  {viewer === "host" ? pick("Kamu", "You") : "Host"}
                 </p>
               </div>
             </div>
@@ -671,8 +705,8 @@ export default function MostLikelyGame() {
 
               <span className="text-xs font-semibold text-zinc-400">
                 {hostAnswered
-                  ? "Sudah memilih"
-                  : "Sedang memilih…"}
+                  ? pick("Sudah memilih", "Choice submitted")
+                  : pick("Sedang memilih…", "Choosing…")}
               </span>
             </div>
           </article>
@@ -698,8 +732,8 @@ export default function MostLikelyGame() {
 
                 <p className="text-xs text-zinc-500">
                   {viewer === "guest"
-                    ? "Kamu"
-                    : "Pasangan"}
+                    ? pick("Kamu", "You")
+                    : pick("Pasangan", "Partner")}
                 </p>
               </div>
             </div>
@@ -715,8 +749,8 @@ export default function MostLikelyGame() {
 
               <span className="text-xs font-semibold text-zinc-400">
                 {guestAnswered
-                  ? "Sudah memilih"
-                  : "Sedang memilih…"}
+                  ? pick("Sudah memilih", "Choice submitted")
+                  : pick("Sedang memilih…", "Choosing…")}
               </span>
             </div>
           </article>
@@ -740,14 +774,14 @@ export default function MostLikelyGame() {
                     </strong>
 
                     <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                      Cocok
+                      {pick("Selaras", "Aligned")}
                     </span>
                   </div>
                 </div>
               </div>
 
               <p className="mt-7 text-xs font-black tracking-[0.2em] text-pink-300">
-                HASIL KALIAN
+                {pick("HASIL KALIAN", "YOUR RESULTS")}
               </p>
 
               <h2 className="mt-3 text-3xl font-black sm:text-4xl">
@@ -755,18 +789,23 @@ export default function MostLikelyGame() {
               </h2>
 
               <p className="mx-auto mt-4 max-w-md leading-7 text-zinc-400">
-                Kalian memilih jawaban yang sama pada{" "}
+                {pick(
+                  "Kalian memilih jawaban yang sama pada",
+                  "You chose the same answer for",
+                )}{" "}
                 <strong className="text-white">
-                  {game.agreementCount} dari{" "}
-                  {game.totalRounds} pertanyaan
+                  {game.agreementCount} {pick("dari", "of")}{" "}
+                  {game.totalRounds} {pick("pertanyaan", "questions")}
                 </strong>
                 .
               </p>
 
               <div className="mx-auto mt-8 max-w-md rounded-3xl border border-pink-400/15 bg-pink-400/[0.06] p-5">
                 <p className="text-sm leading-6 text-zinc-300">
-                  💡 Gunakan jawaban yang berbeda sebagai
-                  pembuka obrolan setelah permainan.
+                  {pick(
+                    "Gunakan jawaban yang berbeda sebagai bahan percakapan setelah permainan.",
+                    "Use your different answers as conversation starters after the game.",
+                  )}
                 </p>
               </div>
 
@@ -775,7 +814,7 @@ export default function MostLikelyGame() {
                 onClick={leaveRoom}
                 className="mt-9 min-h-13 w-full max-w-md rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 px-6 font-bold shadow-lg shadow-pink-950/40 transition hover:-translate-y-0.5"
               >
-                Pilih game berikutnya
+                {pick("Pilih permainan berikutnya", "Choose another game")}
               </button>
             </div>
           ) : (
@@ -783,12 +822,12 @@ export default function MostLikelyGame() {
               <div className="border-b border-white/10 px-5 py-5 sm:px-8">
                 <div className="flex items-center justify-between gap-4 text-xs">
                   <span className="font-bold text-zinc-300">
-                    Pertanyaan {game.round} dari{" "}
+                    {pick("Pertanyaan", "Question")} {game.round} {pick("dari", "of")}{" "}
                     {game.totalRounds}
                   </span>
 
                   <span className="text-pink-300">
-                    Cocok {game.agreementCount} kali
+                    {pick("Selaras", "Aligned")} {game.agreementCount} {pick("kali", "times")}
                   </span>
                 </div>
 
@@ -806,22 +845,23 @@ export default function MostLikelyGame() {
                 <div className="inline-flex items-center gap-2 rounded-full border border-pink-400/20 bg-pink-400/10 px-3 py-1.5 text-xs font-bold text-pink-200">
                   <span aria-hidden="true">✦</span>
                   {game.phase === "reveal"
-                    ? "HASIL PILIHAN"
-                    : "SIAPA YANG LEBIH…"}
+                    ? pick("HASIL PILIHAN", "CHOICE RESULTS")
+                    : pick("SIAPA YANG LEBIH…", "WHO IS MORE LIKELY…")}
                 </div>
 
                 <h2 className="mt-5 text-2xl font-black leading-snug text-white sm:text-3xl">
-                  {game.question?.text ??
-                    "Pertanyaan tidak tersedia."}
+                  {question?.text ??
+                    pick("Pertanyaan tidak tersedia.", "Question unavailable.")}
                 </h2>
 
                 {game.phase === "answering" &&
                   (game.yourAnswer === null ? (
                     <>
                       <p className="mt-3 text-sm leading-6 text-zinc-400">
-                        Pilih berdasarkan pendapatmu sendiri.
-                        Jawaban tetap rahasia sampai kalian
-                        berdua selesai.
+                        {pick(
+                          "Pilih berdasarkan pendapatmu. Jawaban tetap tersembunyi sampai kalian berdua selesai.",
+                          "Choose based on your own view. Answers stay hidden until both of you have finished.",
+                        )}
                       </p>
 
                       <PlayerChoices
@@ -842,7 +882,7 @@ export default function MostLikelyGame() {
                     >
                       <div className="p-5">
                         <p className="text-xs font-bold uppercase tracking-[0.16em] text-zinc-500">
-                          Pilihanmu
+                          {pick("Pilihanmu", "Your choice")}
                         </p>
 
                         <div className="mt-4 flex items-center gap-3">
@@ -876,8 +916,8 @@ export default function MostLikelyGame() {
 
                         <p className="text-sm text-zinc-500">
                           {game.partnerAnswered
-                            ? "Membuka hasil…"
-                            : "Menunggu pasanganmu memilih…"}
+                            ? pick("Membuka hasil…", "Revealing results…")
+                            : pick("Menunggu pasanganmu memilih…", "Waiting for your partner…")}
                         </p>
                       </div>
                     </div>
@@ -911,14 +951,20 @@ export default function MostLikelyGame() {
                           }`}
                         >
                           {matched
-                            ? "Kalian sepakat!"
-                            : "Jawaban kalian berbeda"}
+                            ? pick("Kalian sepakat.", "You agree.")
+                            : pick("Pilihan kalian berbeda", "Your choices differ")}
                         </h3>
 
                         <p className="mt-2 text-sm text-zinc-500">
                           {matched
-                            ? "Kalian melihat hal ini dengan cara yang sama."
-                            : "Saatnya mencari tahu alasan di balik pilihan kalian."}
+                            ? pick(
+                                "Kalian melihat hal ini dengan cara yang sama.",
+                                "You see this the same way.",
+                              )
+                            : pick(
+                                "Gunakan hasil ini untuk memahami alasan di balik pilihan masing-masing.",
+                                "Use this result to understand the reasoning behind each choice.",
+                              )}
                         </p>
                       </div>
 
@@ -932,7 +978,7 @@ export default function MostLikelyGame() {
 
                             <div className="min-w-0">
                               <p className="truncate text-xs font-bold uppercase tracking-wider text-zinc-500">
-                                Pilihan {hostName}
+                                {pick("Pilihan", "Choice by")} {hostName}
                               </p>
 
                               <p className="mt-1 truncate font-bold">
@@ -956,7 +1002,7 @@ export default function MostLikelyGame() {
 
                             <div className="min-w-0">
                               <p className="truncate text-xs font-bold uppercase tracking-wider text-zinc-500">
-                                Pilihan {guestName}
+                                {pick("Pilihan", "Choice by")} {guestName}
                               </p>
 
                               <p className="mt-1 truncate font-bold">
@@ -985,8 +1031,8 @@ export default function MostLikelyGame() {
                         className="mt-6 flex min-h-13 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 px-6 font-bold shadow-lg shadow-pink-950/40 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
                       >
                         {game.round === game.totalRounds
-                          ? "Lihat hasil akhir"
-                          : "Pertanyaan berikutnya"}
+                          ? pick("Lihat hasil akhir", "View final results")
+                          : pick("Pertanyaan berikutnya", "Next question")}
 
                         <span aria-hidden="true">→</span>
                       </button>
@@ -995,7 +1041,7 @@ export default function MostLikelyGame() {
                         aria-live="polite"
                         className="mt-5 rounded-2xl bg-white/[0.035] px-4 py-3 text-center text-sm text-zinc-500"
                       >
-                        Menunggu host melanjutkan…
+                        {pick("Menunggu host melanjutkan…", "Waiting for the host to continue…")}
                       </div>
                     )}
                   </div>

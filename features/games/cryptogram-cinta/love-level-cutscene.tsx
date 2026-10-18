@@ -1,3 +1,7 @@
+"use client";
+
+import { useAppLanguage } from "@/features/platform/i18n/language-provider";
+
 type LoveLevelCutsceneProps = {
   hostName: string;
   guestName: string;
@@ -49,12 +53,17 @@ const CSS = `
   }
 `;
 
-function HuggingBears() {
+function CelebratingBears() {
+  const { pick } = useAppLanguage();
+
   return (
     <svg
       viewBox="0 0 520 300"
       className="cipher-bears h-full w-full overflow-visible"
-      aria-label="Dua beruang berpelukan"
+      aria-label={pick(
+        "Dua beruang merayakan kemenangan bersama",
+        "Two bears celebrating together",
+      )}
       role="img"
     >
       <defs>
@@ -86,7 +95,6 @@ function HuggingBears() {
           <circle cx="151" cy="116" r="7" fill="#3f1d2b" />
           <ellipse cx="121" cy="139" rx="11" ry="8" fill="#3f1d2b" />
           <path d="M121 146 C113 158 102 157 97 150 M121 146 C129 158 140 157 145 150" fill="none" stroke="#3f1d2b" strokeWidth="4" strokeLinecap="round" />
-          <path d="M167 177 C207 174 220 196 236 222" fill="none" stroke="#fda4af" strokeWidth="34" strokeLinecap="round" />
         </g>
 
         <g transform="translate(241 31) rotate(3 120 140)">
@@ -101,7 +109,6 @@ function HuggingBears() {
           <circle cx="151" cy="116" r="7" fill="#292044" />
           <ellipse cx="121" cy="139" rx="11" ry="8" fill="#292044" />
           <path d="M121 146 C113 158 102 157 97 150 M121 146 C129 158 140 157 145 150" fill="none" stroke="#292044" strokeWidth="4" strokeLinecap="round" />
-          <path d="M75 177 C35 174 22 196 6 222" fill="none" stroke="#c4b5fd" strokeWidth="34" strokeLinecap="round" />
         </g>
       </g>
 
@@ -132,11 +139,16 @@ export function LoveLevelCutscene({
   busy,
   onContinue,
 }: LoveLevelCutsceneProps) {
+  const { pick } = useAppLanguage();
+
   return (
     <div
       role="dialog"
       aria-modal="true"
-      aria-label={`Perayaan level ${level} untuk ${hostName} dan ${guestName}`}
+      aria-label={pick(
+        `Perayaan level ${level} untuk ${hostName} dan ${guestName}`,
+        `Level ${level} celebration for ${hostName} and ${guestName}`,
+      )}
       className="fixed inset-0 z-[9999] grid place-items-center overflow-hidden bg-[radial-gradient(circle_at_50%_35%,rgba(244,114,182,.25),transparent_34%),linear-gradient(145deg,rgba(8,8,22,.985),rgba(25,8,34,.99))] p-3 text-white backdrop-blur-xl"
     >
       <style>{CSS}</style>
@@ -155,15 +167,18 @@ export function LoveLevelCutscene({
 
       <section className="relative max-h-[calc(100dvh-24px)] w-[min(94vw,720px)] overflow-auto rounded-[2rem] border border-white/15 bg-[linear-gradient(160deg,rgba(34,20,52,.97),rgba(10,12,29,.98))] px-5 py-7 text-center shadow-[0_36px_120px_rgba(0,0,0,.65)] sm:px-9 sm:py-9">
         <p className="text-[11px] font-black tracking-[.24em] text-rose-300">
-          LEVEL {level} TERPECAHKAN
+          {pick(`LEVEL ${level} TERPECAHKAN`, `LEVEL ${level} DECODED`)}
         </p>
 
         <div className="mx-auto mt-1 aspect-[520/300] w-full max-w-[520px]">
-          <HuggingBears />
+          <CelebratingBears />
         </div>
 
         <h2 className="-mt-2 text-3xl font-black sm:text-4xl">
-          Kalian menemukan maknanya bersama.
+          {pick(
+            "Kalian menemukan maknanya bersama.",
+            "You found its meaning together.",
+          )}
         </h2>
         <p className="mt-3 text-sm text-zinc-400">
           {hostName} <span className="text-rose-300">♥</span> {guestName}
@@ -182,7 +197,7 @@ export function LoveLevelCutscene({
             rel="noreferrer"
             className="mt-2 inline-flex text-xs font-bold text-rose-300 underline decoration-rose-300/30 underline-offset-4 hover:text-rose-200"
           >
-            Lihat sumber kutipan ↗
+            {pick("Lihat sumber kutipan ↗", "View quotation source ↗")}
           </a>
         </blockquote>
 
@@ -193,10 +208,19 @@ export function LoveLevelCutscene({
           className="mt-7 min-h-13 w-full rounded-2xl bg-gradient-to-r from-rose-500 to-violet-500 px-6 font-black shadow-lg shadow-rose-950/40 transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-55 disabled:hover:translate-y-0"
         >
           {viewerReady
-            ? "Menunggu pasangan selesai melihat…"
+            ? pick(
+                "Menunggu pasangan selesai melihat…",
+                "Waiting for your partner…",
+              )
             : partnerReady
-              ? "Pasangan siap — buka level berikutnya"
-              : "Lanjut setelah menikmati momen ini"}
+              ? pick(
+                  "Pasangan siap — buka level berikutnya",
+                  "Your partner is ready — open the next level",
+                )
+              : pick(
+                  "Lanjut setelah selesai membaca",
+                  "Continue when you have finished reading",
+                )}
         </button>
       </section>
     </div>

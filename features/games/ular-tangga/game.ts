@@ -3,6 +3,9 @@ import type {
   GameHistoryItem,
   PlayerRole,
 } from "@/features/platform/room/types";
+import type { AppLocale } from "@/features/platform/i18n/locale";
+
+import { CHALLENGES_EN } from "./challenges.en";
 
 export type SnakeLadderRoomView = BaseRoomView & {
   turn: PlayerRole;
@@ -108,6 +111,41 @@ export const CHALLENGES = [
   "Urutkan tiga ide kencan berikut dari favoritmu: piknik, memasak bersama, atau perjalanan spontan.",
   "Tutup mata lalu sebutkan lima detail wajah pasangan yang paling kamu ingat.",
 ];
+
+export function getLocalizedChallenge(
+  challenge: string | null,
+  locale: AppLocale,
+) {
+  if (!challenge || locale === "id") {
+    return challenge;
+  }
+
+  const index = CHALLENGES.indexOf(challenge);
+  return index >= 0 ? CHALLENGES_EN[index] ?? challenge : challenge;
+}
+
+export function localizeSnakeHistoryText(
+  value: string,
+  locale: AppLocale,
+) {
+  if (locale === "id") return value;
+
+  return value
+    .replace(/ membuat ruang$/, " created the room")
+    .replace(/ sudah bergabung$/, " joined")
+    .replace(/ melempar (\d+)$/, " rolled $1")
+    .replace(/ menyelesaikan Petak Cerita$/, " completed the Story Square")
+    .replace(/^Menunggu pasangan bergabung\.$/, "Waiting for a partner to join.")
+    .replace(/^Permainan dimulai\. Giliran host lebih dulu\.$/, "The game has started. The host goes first.")
+    .replace(/^Dari petak (\d+) ke (\d+)\.$/, "From square $1 to $2.")
+    .replace(/^Momen manis! Naik dari (\d+) ke (\d+)\.$/, "A sweet moment! Climbed from $1 to $2.")
+    .replace(/^Ups, salah paham\. Turun dari (\d+) ke (\d+)\.$/, "A small misunderstanding. Moved down from $1 to $2.")
+    .replace(/^Butuh angka pas untuk mencapai 100\. Tetap di petak (\d+)\.$/, "An exact roll is required to reach 100. Staying on square $1.")
+    .replace(/^Sampai di petak 100 dan memenangkan permainan!$/, "Reached square 100 and won the game!")
+    .replace(/^Giliran berpindah ke (.+)\.$/, "The turn passes to $1.")
+    .replace(/^Permainan baru dimulai$/, "A new game has started")
+    .replace(/^Kedua pion kembali ke petak pertama\.$/, "Both pieces return to the first square.");
+}
 
 const rows = Array.from({ length: 10 }, (_, row) => {
   const start = row * 10 + 1;

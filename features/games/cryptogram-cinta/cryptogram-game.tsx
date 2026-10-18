@@ -7,18 +7,19 @@ import {
   useState,
 } from "react";
 
-import {
-  cryptogramLanguageLabel,
-  type CryptogramLanguage,
-} from "@/features/games/cryptogram-cinta/content";
+import type { CryptogramLanguage } from "@/features/games/cryptogram-cinta/content";
 import { LoveLevelCutscene } from "@/features/games/cryptogram-cinta/love-level-cutscene";
 import type { CryptogramRoomView } from "@/features/games/cryptogram-cinta/room-view";
 import { useCryptogramRoom } from "@/features/games/cryptogram-cinta/use-cryptogram-room";
+import { useAppLanguage } from "@/features/platform/i18n/language-provider";
+import { localizeRuntimeText } from "@/features/platform/i18n/runtime-text";
 import type { PlayerRole } from "@/features/platform/room/types";
 
 const ALPHABET = Array.from("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 
 function Shell({ children }: { children: ReactNode }) {
+  const { pick } = useAppLanguage();
+
   return (
     <main className="relative min-h-[100svh] overflow-hidden bg-[#070914] px-4 py-5 text-white sm:px-6 sm:py-8">
       <div className="pointer-events-none absolute -left-32 -top-24 h-96 w-96 rounded-full bg-cyan-500/10 blur-[120px]" />
@@ -32,7 +33,7 @@ function Shell({ children }: { children: ReactNode }) {
           className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/10 bg-white/[.04] px-4 text-sm font-medium text-zinc-300 backdrop-blur-xl transition hover:border-white/20 hover:bg-white/[.08] hover:text-white"
         >
           <span aria-hidden="true">←</span>
-          Kembali ke katalog
+          {pick("Kembali ke katalog", "Back to games")}
         </Link>
         {children}
       </div>
@@ -41,6 +42,8 @@ function Shell({ children }: { children: ReactNode }) {
 }
 
 function ErrorNotice({ message }: { message: string }) {
+  const { locale } = useAppLanguage();
+
   if (!message) return null;
 
   return (
@@ -48,12 +51,14 @@ function ErrorNotice({ message }: { message: string }) {
       role="alert"
       className="mt-5 rounded-2xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm leading-6 text-red-200"
     >
-      {message}
+      {localizeRuntimeText(locale, message)}
     </div>
   );
 }
 
 function LoadingScreen() {
+  const { pick } = useAppLanguage();
+
   return (
     <Shell>
       <div className="flex min-h-[75svh] flex-col items-center justify-center text-center">
@@ -63,7 +68,9 @@ function LoadingScreen() {
             🔐
           </div>
         </div>
-        <p className="mt-6 font-bold">Menyusun alfabet rahasia…</p>
+        <p className="mt-6 font-bold">
+          {pick("Menyusun alfabet rahasia…", "Preparing the secret alphabet…")}
+        </p>
       </div>
     </Shell>
   );
@@ -126,10 +133,12 @@ function CipherBoard({
   disabled: boolean;
   onSelect: (letter: string) => void;
 }) {
+  const { pick } = useAppLanguage();
+
   return (
     <div
       className="flex flex-wrap justify-center gap-x-4 gap-y-5"
-      aria-label="Kutipan dalam sandi"
+      aria-label={pick("Kutipan dalam sandi", "Encrypted quotation")}
     >
       {cipherText.split(" ").map((word, wordIndex) => (
         <span
@@ -159,8 +168,14 @@ function CipherBoard({
                 onClick={() => onSelect(character)}
                 aria-label={
                   decoded
-                    ? `${character} berarti ${decoded}`
-                    : `Pilih huruf sandi ${character}`
+                    ? pick(
+                        `${character} berarti ${decoded}`,
+                        `${character} means ${decoded}`,
+                      )
+                    : pick(
+                        `Pilih huruf sandi ${character}`,
+                        `Select cipher letter ${character}`,
+                      )
                 }
                 className={`grid h-14 w-8 grid-rows-[1fr_auto] rounded-xl border px-1 py-1.5 font-mono transition sm:w-9 ${
                   decoded
@@ -200,21 +215,26 @@ function AlphabetPicker({
   disabled: boolean;
   onGuess: (plainLetter: string) => void;
 }) {
+  const { pick } = useAppLanguage();
   const usedLetters = new Set(Object.values(mappings));
 
   return (
     <div className="mt-7">
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs font-black tracking-[.16em] text-zinc-500">
-          PILIH ARTI HURUF
+          {pick("PILIH ARTI HURUF", "CHOOSE THE LETTER VALUE")}
         </p>
         <p className="text-sm text-cyan-200">
           {selectedCipher ? (
             <>
-              Sandi <strong>{selectedCipher}</strong> berarti…
+              {pick("Sandi", "Cipher")} <strong>{selectedCipher}</strong>{" "}
+              {pick("berarti…", "means…")}
             </>
           ) : (
-            "Pilih huruf pada kutipan dahulu"
+            pick(
+              "Pilih huruf pada kutipan terlebih dahulu",
+              "Select a letter in the quotation first",
+            )
           )}
         </p>
       </div>
@@ -241,6 +261,7 @@ function AlphabetPicker({
 }
 
 export default function CryptogramGame() {
+  const { pick } = useAppLanguage();
   const {
     room,
     busy,
@@ -286,29 +307,33 @@ export default function CryptogramGame() {
               🔐
             </div>
             <p className="mt-7 text-xs font-black tracking-[.24em] text-cyan-300">
-              SURVIVAL PUZZLE UNTUK BERDUA
+              {pick("PUZZLE BERTAHAN UNTUK BERDUA", "A TWO-PLAYER SURVIVAL PUZZLE")}
             </p>
             <h1 className="mt-4 bg-gradient-to-r from-white via-cyan-100 to-rose-200 bg-clip-text text-4xl font-black text-transparent sm:text-6xl">
-              Cryptogram Cinta
+              {pick("Cryptogram Cinta", "Love Cryptogram")}
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-zinc-400 sm:text-lg">
-              Pecahkan alfabet rahasia bersama. Setiap tebakan benar membuka
-              isi kutipan cinta; setiap tebakan salah melukai Hati Sandi kalian.
+              {pick(
+                "Pecahkan alfabet rahasia bersama. Setiap tebakan benar membuka kutipan; setiap tebakan salah mengurangi Hati Sandi bersama.",
+                "Decode a secret alphabet together. Every correct guess reveals the quotation; every wrong guess reduces your shared Cipher Hearts.",
+              )}
             </p>
           </header>
 
           <section className="mx-auto mt-9 grid max-w-3xl gap-3 sm:grid-cols-4">
             {[
-              ["1–2", "Mudah", "4 huruf terbuka"],
-              ["3–5", "Sedang", "3 huruf terbuka"],
-              ["6–8", "Sulit", "1 huruf terbuka"],
-              ["9+", "Legenda", "Tanpa bantuan"],
+              ["1–2", pick("Mudah", "Easy"), pick("4 huruf terbuka", "4 letters revealed")],
+              ["3–5", pick("Sedang", "Medium"), pick("3 huruf terbuka", "3 letters revealed")],
+              ["6–8", pick("Sulit", "Hard"), pick("1 huruf terbuka", "1 letter revealed")],
+              ["9+", pick("Legenda", "Legend"), pick("Tanpa bantuan", "No starting clues")],
             ].map(([levels, label, detail]) => (
               <article
                 key={label}
                 className="rounded-2xl border border-white/10 bg-white/[.04] p-4 text-left"
               >
-                <p className="text-xs font-bold text-cyan-300">LEVEL {levels}</p>
+                <p className="text-xs font-bold text-cyan-300">
+                  {pick("LEVEL", "LEVEL")} {levels}
+                </p>
                 <h2 className="mt-2 font-black">{label}</h2>
                 <p className="mt-1 text-xs text-zinc-500">{detail}</p>
               </article>
@@ -318,20 +343,22 @@ export default function CryptogramGame() {
           <section className="mx-auto mt-7 max-w-2xl overflow-hidden rounded-[32px] border border-white/10 bg-white/[.055] shadow-2xl shadow-black/30 backdrop-blur-2xl">
             <form onSubmit={handleCreate} className="p-6 sm:p-8">
               <p className="text-xs font-black tracking-[.18em] text-cyan-300">
-                BUAT RUANG BERTAHAN
+                {pick("BUAT RUANG BERMAIN", "CREATE A GAME ROOM")}
               </p>
               <fieldset className="mt-5">
                 <legend className="text-sm font-semibold">
-                  Bahasa kutipan
+                  {pick("Bahasa kutipan", "Quotation language")}
                 </legend>
                 <p className="mt-1 text-xs leading-5 text-zinc-500">
-                  Pilihan ini berlaku untuk kedua pemain selama satu
-                  perjalanan.
+                  {pick(
+                    "Pilihan ini berlaku untuk kedua pemain selama satu sesi permainan.",
+                    "This choice applies to both players for the entire session.",
+                  )}
                 </p>
                 <div className="mt-3 grid grid-cols-2 gap-3">
                   {(
                     [
-                      ["id", "🇮🇩", "Bahasa Indonesia"],
+                      ["id", "🇮🇩", pick("Bahasa Indonesia", "Indonesian")],
                       ["en", "🇬🇧", "English"],
                     ] as const
                   ).map(([value, flag, label]) => {
@@ -361,7 +388,7 @@ export default function CryptogramGame() {
                 </div>
               </fieldset>
               <label htmlFor="cryptogram-name" className="mt-5 block text-sm font-semibold">
-                Nama panggilanmu
+                {pick("Nama panggilanmu", "Your display name")}
               </label>
               <input
                 id="cryptogram-name"
@@ -371,7 +398,7 @@ export default function CryptogramGame() {
                 maxLength={20}
                 required
                 autoComplete="nickname"
-                placeholder="Misalnya: Ara"
+                placeholder={pick("Misalnya: Ara", "For example: Alex")}
                 className="mt-2 h-13 w-full rounded-2xl border border-white/10 bg-black/20 px-4 outline-none transition placeholder:text-zinc-600 focus:border-cyan-300/60 focus:ring-4 focus:ring-cyan-400/10"
               />
               <button
@@ -379,19 +406,23 @@ export default function CryptogramGame() {
                 disabled={busy}
                 className="mt-5 min-h-13 w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 px-6 font-black shadow-lg shadow-cyan-950/30 transition hover:-translate-y-0.5 disabled:opacity-50"
               >
-                {busy ? "Menyiapkan sandi…" : "Buat room Cryptogram"}
+                {busy
+                  ? pick("Menyiapkan sandi…", "Preparing the cipher…")
+                  : pick("Buat ruang Cryptogram", "Create Cryptogram room")}
               </button>
             </form>
 
             <div className="flex items-center gap-3 px-6 sm:px-8">
               <div className="h-px flex-1 bg-white/10" />
-              <span className="text-xs text-zinc-600">ATAU MASUK</span>
+              <span className="text-xs text-zinc-600">
+                {pick("ATAU MASUK", "OR JOIN")}
+              </span>
               <div className="h-px flex-1 bg-white/10" />
             </div>
 
             <form onSubmit={handleOpen} className="p-6 sm:p-8">
               <label htmlFor="cryptogram-code" className="text-sm font-semibold">
-                Kode room pasangan
+                {pick("Kode ruang pasangan", "Partner's room code")}
               </label>
               <div className="mt-2 flex gap-2">
                 <input
@@ -407,7 +438,7 @@ export default function CryptogramGame() {
                   }
                   required
                   autoComplete="off"
-                  placeholder="KODE ROOM"
+                  placeholder={pick("KODE RUANG", "ROOM CODE")}
                   className="h-13 min-w-0 flex-1 rounded-2xl border border-white/10 bg-black/20 px-4 font-mono font-black tracking-[.14em] outline-none placeholder:font-sans placeholder:font-normal placeholder:tracking-normal placeholder:text-zinc-600 focus:border-cyan-300/60"
                 />
                 <button
@@ -415,7 +446,7 @@ export default function CryptogramGame() {
                   disabled={busy || roomCode.length < 6}
                   className="rounded-2xl border border-white/10 bg-white/[.06] px-5 font-bold transition hover:border-cyan-300/40 hover:bg-cyan-300/10 disabled:opacity-40"
                 >
-                  Buka
+                  {pick("Buka", "Open")}
                 </button>
               </div>
               <ErrorNotice message={error} />
@@ -423,8 +454,10 @@ export default function CryptogramGame() {
           </section>
 
           <p className="mx-auto mt-6 max-w-2xl text-center text-xs leading-5 text-zinc-600">
-            Semua soal memakai kutipan asli dengan nama karya dan pencipta.
-            Tidak ada kutipan atau parafrasa buatan.
+            {pick(
+              "Semua soal memakai kutipan autentik beserta nama karya dan penciptanya. Tidak ada kutipan atau parafrasa buatan.",
+              "Every puzzle uses an authentic quotation with its work and creator credited. No quotations or paraphrases are invented.",
+            )}
           </p>
         </div>
       </Shell>
@@ -442,26 +475,32 @@ export default function CryptogramGame() {
               💌
             </div>
             <p className="mt-5 text-xs font-black tracking-[.2em] text-cyan-300">
-              UNDANGAN MEMECAHKAN SANDI
+              {pick("UNDANGAN MEMECAHKAN SANDI", "CIPHER INVITATION")}
             </p>
             <h1 className="mt-3 text-3xl font-black">
-              {room.players.host.name} mengundangmu
+              {room.players.host.name} {pick("mengundangmu", "invited you")}
             </h1>
             <p className="mt-3 font-mono text-xl tracking-[.18em] text-zinc-400">
               {room.code}
             </p>
             <p className="mx-auto mt-3 w-fit rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-xs font-bold text-cyan-200">
-              Kutipan · {cryptogramLanguageLabel(room.cryptogram.language)}
+              {pick("Kutipan", "Quotations")} ·{" "}
+              {room.cryptogram.language === "id"
+                ? pick("Bahasa Indonesia", "Indonesian")
+                : "English"}
             </p>
 
             {roomFull ? (
               <p className="mt-7 rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4 text-amber-100">
-                Room ini sudah memiliki dua pemain.
+                {pick(
+                  "Ruang ini sudah memiliki dua pemain.",
+                  "This room already has two players.",
+                )}
               </p>
             ) : (
               <form onSubmit={handleJoin} className="mt-7 text-left">
                 <label htmlFor="cryptogram-join-name" className="text-sm font-semibold">
-                  Nama panggilanmu
+                  {pick("Nama panggilanmu", "Your display name")}
                 </label>
                 <input
                   id="cryptogram-join-name"
@@ -470,7 +509,7 @@ export default function CryptogramGame() {
                   minLength={2}
                   maxLength={20}
                   required
-                  placeholder="Misalnya: Bima"
+                  placeholder={pick("Misalnya: Bima", "For example: Sam")}
                   className="mt-2 h-13 w-full rounded-2xl border border-white/10 bg-black/20 px-4 outline-none focus:border-cyan-300/60"
                 />
                 <button
@@ -478,13 +517,15 @@ export default function CryptogramGame() {
                   disabled={busy}
                   className="mt-4 min-h-13 w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 px-6 text-center font-black disabled:opacity-50"
                 >
-                  {busy ? "Bergabung…" : "Gabung dan pecahkan bersama"}
+                  {busy
+                    ? pick("Bergabung…", "Joining…")
+                    : pick("Gabung dan pecahkan bersama", "Join and decode together")}
                 </button>
               </form>
             )}
             <ErrorNotice message={error} />
             <button type="button" onClick={leaveRoom} className="mt-6 text-sm text-zinc-500 hover:text-white">
-              Bukan room yang kamu cari?
+              {pick("Bukan ruang yang kamu cari?", "Looking for a different room?")}
             </button>
           </section>
         </div>
@@ -501,14 +542,22 @@ export default function CryptogramGame() {
               🔐
             </div>
             <p className="mt-6 text-xs font-black tracking-[.2em] text-cyan-300">
-              MENUNGGU PARTNER SANDI
+              {pick("MENUNGGU PASANGAN", "WAITING FOR YOUR PARTNER")}
             </p>
-            <h1 className="mt-3 text-2xl font-black">Room sudah siap</h1>
+            <h1 className="mt-3 text-2xl font-black">
+              {pick("Ruang sudah siap", "Your room is ready")}
+            </h1>
             <p className="mt-2 text-sm text-zinc-500">
-              Kutipan akan menggunakan {cryptogramLanguageLabel(room.cryptogram.language)}.
+              {pick("Kutipan akan menggunakan", "Quotations will be in")}{" "}
+              {room.cryptogram.language === "id"
+                ? pick("Bahasa Indonesia", "Indonesian")
+                : "English"}
+              .
             </p>
             <div className="mt-6 rounded-3xl border border-dashed border-cyan-300/25 bg-cyan-300/[.06] p-6">
-              <p className="text-xs font-bold text-zinc-500">KODE ROOM</p>
+              <p className="text-xs font-bold text-zinc-500">
+                {pick("KODE RUANG", "ROOM CODE")}
+              </p>
               <p className="mt-3 font-mono text-4xl font-black tracking-[.18em] text-cyan-100">
                 {room.code}
               </p>
@@ -518,11 +567,13 @@ export default function CryptogramGame() {
               onClick={() => void copyInvite()}
               className="mt-6 min-h-13 w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-500 px-6 font-black"
             >
-              {copied ? "✓ Tautan tersalin" : "Salin tautan undangan"}
+              {copied
+                ? pick("✓ Tautan tersalin", "✓ Link copied")
+                : pick("Salin tautan undangan", "Copy invitation link")}
             </button>
             <ErrorNotice message={error} />
             <button type="button" onClick={leaveRoom} className="mt-6 text-sm text-zinc-500 hover:text-white">
-              Keluar dari room
+              {pick("Keluar dari ruang", "Leave room")}
             </button>
           </section>
         </div>
@@ -533,7 +584,8 @@ export default function CryptogramGame() {
   const game = room.cryptogram;
   const viewer = room.you;
   const hostName = room.players.host.name;
-  const guestName = room.players.guest?.name ?? "Pasangan";
+  const guestName =
+    room.players.guest?.name ?? pick("Pasangan", "Partner");
   const lastActor = game.lastEvent
     ? playerName(room, game.lastEvent.role)
     : null;
@@ -545,14 +597,19 @@ export default function CryptogramGame() {
           <section className="rounded-[36px] border border-rose-400/20 bg-gradient-to-b from-rose-400/10 to-white/[.03] p-7 shadow-2xl shadow-rose-950/25 sm:p-12">
             <div className="text-6xl">💔</div>
             <p className="mt-6 text-xs font-black tracking-[.22em] text-rose-300">
-              HATI SANDI HABIS
+              {pick("HATI SANDI HABIS", "NO CIPHER HEARTS LEFT")}
             </p>
             <h1 className="mt-3 text-4xl font-black">
-              Kalian bertahan {game.solvedLevels} level.
+              {pick(
+                `Kalian menyelesaikan ${game.solvedLevels} level.`,
+                `You completed ${game.solvedLevels} levels.`,
+              )}
             </h1>
             <p className="mx-auto mt-4 max-w-xl leading-7 text-zinc-400">
-              Jawaban terakhir terbuka. Tarik napas, baca maknanya bersama,
-              lalu coba pecahkan lebih jauh pada perjalanan berikutnya.
+              {pick(
+                "Jawaban terakhir telah dibuka. Baca kutipannya bersama, lalu coba melangkah lebih jauh pada sesi berikutnya.",
+                "The final answer has been revealed. Read the quotation together, then try to progress further in your next session.",
+              )}
             </p>
 
             {game.quote && (
@@ -569,7 +626,7 @@ export default function CryptogramGame() {
                   rel="noreferrer"
                   className="mt-2 inline-flex text-xs font-bold text-rose-300 underline decoration-rose-300/30 underline-offset-4 hover:text-rose-200"
                 >
-                  Lihat sumber kutipan ↗
+                  {pick("Lihat sumber kutipan ↗", "View quotation source ↗")}
                 </a>
               </blockquote>
             )}
@@ -577,13 +634,13 @@ export default function CryptogramGame() {
             <div className="mx-auto mt-7 grid max-w-lg grid-cols-2 gap-3">
               <PlayerCard
                 name={hostName}
-                label="Huruf ditemukan"
+                label={pick("Huruf ditemukan", "Letters found")}
                 contribution={game.contributions.host}
                 tone="rose"
               />
               <PlayerCard
                 name={guestName}
-                label="Huruf ditemukan"
+                label={pick("Huruf ditemukan", "Letters found")}
                 contribution={game.contributions.guest}
                 tone="violet"
               />
@@ -596,15 +653,16 @@ export default function CryptogramGame() {
                 onClick={() => void performAction("cryptogram-restart")}
                 className="mt-8 min-h-13 w-full max-w-lg rounded-2xl bg-gradient-to-r from-rose-500 to-violet-500 px-6 font-black disabled:opacity-50"
               >
-                Mulai perjalanan baru
+                {pick("Mulai perjalanan baru", "Start a new run")}
               </button>
             ) : (
               <p className="mt-8 text-sm text-zinc-500">
-                Menunggu {hostName} memulai perjalanan baru…
+                {pick("Menunggu", "Waiting for")} {hostName}{" "}
+                {pick("memulai perjalanan baru…", "to start a new run…")}
               </p>
             )}
             <button type="button" onClick={leaveRoom} className="mt-5 block w-full text-sm text-zinc-500 hover:text-white">
-              Kembali ke katalog game
+              {pick("Kembali ke katalog permainan", "Back to games")}
             </button>
             <ErrorNotice message={error} />
           </section>
@@ -638,23 +696,28 @@ export default function CryptogramGame() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-black tracking-[.18em] text-cyan-300">
-                ROOM {room.code} · LEVEL {game.level}
+                {pick("RUANG", "ROOM")} {room.code} ·{" "}
+                {pick("TINGKAT", "LEVEL")} {game.level}
               </p>
-              <h1 className="mt-2 text-2xl font-black">Cryptogram Cinta</h1>
+              <h1 className="mt-2 text-2xl font-black">
+                {pick("Cryptogram Cinta", "Love Cryptogram")}
+              </h1>
             </div>
             <button
               type="button"
               onClick={() => void copyInvite()}
               className="rounded-xl border border-white/10 bg-white/[.05] px-4 py-2 text-xs font-bold text-zinc-300 hover:border-cyan-300/30 hover:text-white"
             >
-              {copied ? "✓ Tersalin" : "⧉ Undang"}
+              {copied
+                ? pick("✓ Tersalin", "✓ Copied")
+                : pick("⧉ Undang", "⧉ Invite")}
             </button>
           </div>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto_auto_auto] sm:items-center">
             <div>
               <div className="flex items-center justify-between text-xs text-zinc-500">
-                <span>Makna ditemukan</span>
+                <span>{pick("Makna ditemukan", "Decoded")}</span>
                 <strong className="text-cyan-200">{game.progress}%</strong>
               </div>
               <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/[.07]">
@@ -665,7 +728,13 @@ export default function CryptogramGame() {
               </div>
             </div>
             <span className="rounded-full border border-violet-300/20 bg-violet-300/10 px-3 py-1.5 text-xs font-bold text-violet-200">
-              {game.difficulty.label}
+              {game.difficulty.id === "easy"
+                ? pick("Mudah", "Easy")
+                : game.difficulty.id === "medium"
+                  ? pick("Sedang", "Medium")
+                  : game.difficulty.id === "hard"
+                    ? pick("Sulit", "Hard")
+                    : pick("Legenda", "Legend")}
             </span>
             <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-xs font-bold text-cyan-200">
               {game.language === "id" ? "ID" : "EN"}
@@ -681,13 +750,21 @@ export default function CryptogramGame() {
         <div className="mt-4 grid grid-cols-2 gap-3">
           <PlayerCard
             name={hostName}
-            label={viewer === "host" ? "Kamu · huruf benar" : "Host · huruf benar"}
+            label={
+              viewer === "host"
+                ? pick("Kamu · huruf benar", "You · correct letters")
+                : pick("Host · huruf benar", "Host · correct letters")
+            }
             contribution={game.contributions.host}
             tone="rose"
           />
           <PlayerCard
             name={guestName}
-            label={viewer === "guest" ? "Kamu · huruf benar" : "Pasangan · huruf benar"}
+            label={
+              viewer === "guest"
+                ? pick("Kamu · huruf benar", "You · correct letters")
+                : pick("Pasangan · huruf benar", "Partner · correct letters")
+            }
             contribution={game.contributions.guest}
             tone="violet"
           />
@@ -697,10 +774,13 @@ export default function CryptogramGame() {
           <div className="border-b border-white/10 px-5 py-4 sm:px-8">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-xs font-black tracking-[.16em] text-zinc-500">
-                KUTIPAN TERENKRIPSI
+                {pick("KUTIPAN TERENKRIPSI", "ENCRYPTED QUOTATION")}
               </p>
               <p className="text-xs text-zinc-500">
-                Huruf bawah = sandi · huruf atas = arti
+                {pick(
+                  "Huruf bawah = sandi · huruf atas = arti",
+                  "Bottom letter = cipher · top letter = value",
+                )}
               </p>
             </div>
           </div>
@@ -738,8 +818,14 @@ export default function CryptogramGame() {
                 }`}
               >
                 {game.lastEvent.kind === "wrong"
-                  ? `${lastActor} mencoba ${game.lastEvent.cipherLetter} = ${game.lastEvent.plainLetter}. Hati Sandi berkurang.`
-                  : `${lastActor} menemukan ${game.lastEvent.cipherLetter} = ${game.lastEvent.plainLetter}.`}
+                  ? pick(
+                      `${lastActor} mencoba ${game.lastEvent.cipherLetter} = ${game.lastEvent.plainLetter}. Hati Sandi berkurang.`,
+                      `${lastActor} tried ${game.lastEvent.cipherLetter} = ${game.lastEvent.plainLetter}. One Cipher Heart was lost.`,
+                    )
+                  : pick(
+                      `${lastActor} menemukan ${game.lastEvent.cipherLetter} = ${game.lastEvent.plainLetter}.`,
+                      `${lastActor} found ${game.lastEvent.cipherLetter} = ${game.lastEvent.plainLetter}.`,
+                    )}
               </div>
             )}
 
@@ -749,27 +835,42 @@ export default function CryptogramGame() {
 
         <section className="mt-4 grid gap-3 sm:grid-cols-3">
           <div className="rounded-2xl border border-white/10 bg-white/[.035] p-4">
-            <p className="text-xs font-bold text-cyan-300">1. PILIH SANDI</p>
+            <p className="text-xs font-bold text-cyan-300">
+              {pick("1. PILIH SANDI", "1. SELECT A CIPHER")}
+            </p>
             <p className="mt-2 text-sm leading-6 text-zinc-500">
-              Tekan huruf bawah pada kutipan yang belum terbuka.
+              {pick(
+                "Tekan huruf bawah pada kutipan yang belum terbuka.",
+                "Select an unrevealed bottom letter in the quotation.",
+              )}
             </p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/[.035] p-4">
-            <p className="text-xs font-bold text-violet-300">2. TEBAK ARTI</p>
+            <p className="text-xs font-bold text-violet-300">
+              {pick("2. TEBAK ARTI", "2. GUESS ITS VALUE")}
+            </p>
             <p className="mt-2 text-sm leading-6 text-zinc-500">
-              Satu huruf asli hanya dapat dipakai oleh satu sandi.
+              {pick(
+                "Satu huruf asli hanya dapat dipakai oleh satu sandi.",
+                "Each original letter can be assigned to only one cipher letter.",
+              )}
             </p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/[.035] p-4">
-            <p className="text-xs font-bold text-rose-300">3. JAGA HATI</p>
+            <p className="text-xs font-bold text-rose-300">
+              {pick("3. JAGA HATI", "3. PROTECT YOUR HEARTS")}
+            </p>
             <p className="mt-2 text-sm leading-6 text-zinc-500">
-              Tebakan salah mengurangi satu Hati Sandi bersama.
+              {pick(
+                "Tebakan salah mengurangi satu Hati Sandi bersama.",
+                "A wrong guess removes one shared Cipher Heart.",
+              )}
             </p>
           </div>
         </section>
 
         <button type="button" onClick={leaveRoom} className="mt-7 w-full text-center text-sm text-zinc-600 hover:text-white">
-          Keluar dari room
+          {pick("Keluar dari ruang", "Leave room")}
         </button>
       </div>
     </Shell>

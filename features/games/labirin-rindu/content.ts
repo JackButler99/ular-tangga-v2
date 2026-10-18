@@ -1,3 +1,7 @@
+import type { AppLocale } from "@/features/platform/i18n/locale";
+
+import { MAZE_MOMENTS_EN } from "./content.en";
+
 export type MazeMomentPrompt = {
   id: string;
   emoji: string;
@@ -160,4 +164,21 @@ export function getMazeMomentPrompt(id: string) {
   }
 
   return prompt;
+}
+export function getLocalizedMazeMomentPrompt(
+  id: string,
+  locale: AppLocale,
+): MazeMomentPrompt {
+  const prompt = getMazeMomentPrompt(id);
+
+  if (locale === "id") return prompt;
+
+  const translation = (
+    MAZE_MOMENTS_EN as Record<
+      string,
+      (typeof MAZE_MOMENTS_EN)[keyof typeof MAZE_MOMENTS_EN]
+    >
+  )[id];
+
+  return translation ? { ...prompt, ...translation } : prompt;
 }

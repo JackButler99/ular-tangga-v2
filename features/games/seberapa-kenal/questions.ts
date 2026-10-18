@@ -1,3 +1,7 @@
+import type { AppLocale } from "@/features/platform/i18n/locale";
+
+import { QUIZ_QUESTIONS_EN } from "./questions.en";
+
 export type QuizQuestionCategory =
   | "ringan"
   | "kebiasaan"
@@ -141,4 +145,31 @@ export function getQuizQuestion(
   }
 
   return question;
+}
+export function getLocalizedQuizQuestion(
+  id: string,
+  locale: AppLocale,
+): QuizQuestion {
+  const question = getQuizQuestion(id);
+
+  if (locale === "id") {
+    return question;
+  }
+
+  const translation = (
+    QUIZ_QUESTIONS_EN as Record<
+      string,
+      (typeof QUIZ_QUESTIONS_EN)[keyof typeof QUIZ_QUESTIONS_EN]
+    >
+  )[id];
+
+  if (!translation) {
+    throw new Error(`English quiz question "${id}" was not found.`);
+  }
+
+  return {
+    ...question,
+    prompt: translation.prompt,
+    options: translation.options,
+  };
 }

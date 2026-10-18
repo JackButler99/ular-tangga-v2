@@ -1,29 +1,38 @@
+"use client";
+
 import Link from "next/link";
 import {
   GAME_CATALOG,
   type GameCatalogItem,
 } from "@/features/platform/game-registry";
+import { useAppLanguage } from "@/features/platform/i18n/language-provider";
+import { localizeText } from "@/features/platform/i18n/locale";
 
 function GameCard({ game }: { game: GameCatalogItem }) {
+  const { locale, pick } = useAppLanguage();
   const content = (
     <>
       <div className="flex items-start justify-between">
         <span className="text-3xl">{game.symbol}</span>
         <span className="text-xs font-bold tracking-wider text-pink-400">
-          {game.status === "available" ? "MAIN SEKARANG" : "SEGERA HADIR"}
+          {game.status === "available"
+            ? pick("MAIN SEKARANG", "PLAY NOW")
+            : pick("SEGERA HADIR", "COMING SOON")}
         </span>
       </div>
 
-      <h2 className="mt-10 text-xl font-semibold">{game.title}</h2>
+      <h2 className="mt-10 text-xl font-semibold">
+        {localizeText(locale, game.title)}
+      </h2>
 
       <p className="mt-3 leading-6 text-zinc-400">
-        {game.description}
+        {localizeText(locale, game.description)}
       </p>
 
       <div className="mt-6 flex gap-3 text-xs text-zinc-500">
-        <span>{game.mood}</span>
+        <span>{localizeText(locale, game.mood)}</span>
         <span>•</span>
-        <span>{game.duration}</span>
+        <span>{localizeText(locale, game.duration)}</span>
       </div>
     </>
   );
@@ -50,6 +59,8 @@ function GameCard({ game }: { game: GameCatalogItem }) {
 }
 
 export default function Home() {
+  const { pick } = useAppLanguage();
+
   return (
     <main className="min-h-screen bg-[#090812] px-6 py-16 text-white">
       <div className="mx-auto max-w-5xl">
@@ -58,12 +69,17 @@ export default function Home() {
         </p>
 
         <h1 className="mt-4 max-w-3xl text-5xl font-bold tracking-tight">
-          Selalu ada alasan untuk main berdua.
+          {pick(
+            "Permainan untuk waktu berdua.",
+            "Games for time together.",
+          )}
         </h1>
 
         <p className="mt-5 max-w-xl leading-7 text-zinc-400">
-          Pilih suasana, undang pasanganmu, lalu mulai permainan langsung
-          dari browser.
+          {pick(
+            "Pilih permainan, buat ruang privat, lalu undang pasangan melalui kode room.",
+            "Choose a game, create a private room, and invite your partner with the room code.",
+          )}
         </p>
 
         <section className="mt-12 grid gap-5 md:grid-cols-3">

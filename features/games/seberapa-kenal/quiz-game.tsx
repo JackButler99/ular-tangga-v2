@@ -8,9 +8,12 @@ import {
 } from "react";
 
 import { otherPlayer } from "@/features/games/seberapa-kenal/engine";
+import { getLocalizedQuizQuestion } from "@/features/games/seberapa-kenal/questions";
 import type { QuizRoomView } from "@/features/games/seberapa-kenal/room-view";
 import { useQuizRoom } from "@/features/games/seberapa-kenal/use-quiz-room";
 import { QuestionCountPicker } from "@/features/platform/components/question-count-picker";
+import { useAppLanguage } from "@/features/platform/i18n/language-provider";
+import { localizeRuntimeText } from "@/features/platform/i18n/runtime-text";
 import {
   DEFAULT_QUESTION_COUNT,
   type QuestionCount,
@@ -33,6 +36,8 @@ function initialFrom(name: string | null | undefined) {
 }
 
 function Shell({ children }: { children: ReactNode }) {
+  const { pick } = useAppLanguage();
+
   return (
     <main className="relative min-h-[100svh] overflow-hidden bg-[#08070f] px-4 py-5 text-white sm:px-6 sm:py-8">
       <div className="pointer-events-none absolute -left-36 -top-28 h-96 w-96 rounded-full bg-violet-600/20 blur-[110px]" />
@@ -47,7 +52,7 @@ function Shell({ children }: { children: ReactNode }) {
           className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 text-sm font-medium text-zinc-300 backdrop-blur-xl transition hover:border-white/20 hover:bg-white/[0.08] hover:text-white focus:outline-none focus:ring-2 focus:ring-violet-400/60"
         >
           <span aria-hidden="true">←</span>
-          <span>Kembali ke katalog</span>
+          <span>{pick("Kembali ke katalog", "Back to games")}</span>
         </Link>
 
         {children}
@@ -57,6 +62,8 @@ function Shell({ children }: { children: ReactNode }) {
 }
 
 function ErrorNotice({ message }: { message: string }) {
+  const { locale } = useAppLanguage();
+
   if (!message) {
     return null;
   }
@@ -73,7 +80,7 @@ function ErrorNotice({ message }: { message: string }) {
         !
       </span>
 
-      <p>{message}</p>
+      <p>{localizeRuntimeText(locale, message)}</p>
     </div>
   );
 }
@@ -142,6 +149,8 @@ function Choices({
 }
 
 function LoadingScreen() {
+  const { pick } = useAppLanguage();
+
   return (
     <Shell>
       <div className="flex min-h-[70svh] flex-col items-center justify-center text-center">
@@ -153,11 +162,11 @@ function LoadingScreen() {
         </div>
 
         <p className="mt-6 font-semibold">
-          Membuka ruang bermain
+          {pick("Membuka ruang bermain", "Opening the game room")}
         </p>
 
         <p className="mt-2 text-sm text-zinc-500">
-          Menyiapkan momen kalian…
+          {pick("Menyiapkan permainan…", "Preparing the game…")}
         </p>
       </div>
     </Shell>
@@ -165,6 +174,7 @@ function LoadingScreen() {
 }
 
 export default function QuizGame() {
+  const { locale, pick } = useAppLanguage();
   const {
     room,
     busy,
@@ -216,28 +226,32 @@ export default function QuizGame() {
 
             <div className="mt-7 inline-flex items-center gap-2 rounded-full border border-violet-400/20 bg-violet-400/10 px-3 py-1.5 text-xs font-bold tracking-[0.18em] text-violet-200">
               <span className="h-1.5 w-1.5 rounded-full bg-violet-300" />
-              GAME UNTUK BERDUA
+              {pick("GAME UNTUK BERDUA", "GAME FOR TWO")}
             </div>
 
             <h1 className="mt-5 bg-gradient-to-r from-white via-violet-100 to-fuchsia-200 bg-clip-text text-4xl font-black leading-tight text-transparent sm:text-6xl">
-              Seberapa Kenal Kamu?
+              {pick(
+                "Seberapa Kenal Kamu?",
+                "How Well Do You Know Each Other?",
+              )}
             </h1>
 
             <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-zinc-400 sm:text-lg">
-              Tebak pilihan pasanganmu, kumpulkan poin, dan
-              temukan hal kecil yang belum pernah kalian
-              bicarakan.
+              {pick(
+                "Tebak pilihan pasangan, kumpulkan poin, dan temukan topik baru untuk dibicarakan.",
+                "Predict your partner’s choices, earn points, and discover new things to discuss.",
+              )}
             </p>
 
             <div className="mt-6 flex flex-wrap justify-center gap-2 text-xs text-zinc-400">
               <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5">
-                👥 2 pemain
+                {pick("👥 2 pemain", "👥 2 players")}
               </span>
               <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5">
-                ⚡ 5–15 pertanyaan
+                {pick("⚡ 5–15 pertanyaan", "⚡ 5–15 questions")}
               </span>
               <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5">
-                🔒 Jawaban rahasia
+                {pick("🔒 Jawaban rahasia", "🔒 Private answers")}
               </span>
             </div>
           </header>
@@ -245,11 +259,11 @@ export default function QuizGame() {
           <section className="mx-auto mt-10 max-w-xl overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.055] shadow-2xl shadow-black/30 backdrop-blur-2xl">
             <div className="border-b border-white/10 bg-gradient-to-r from-violet-500/10 to-fuchsia-500/5 px-6 py-5 sm:px-8">
               <p className="text-xs font-bold tracking-[0.18em] text-violet-300">
-                MULAI DATE NIGHT
+                {pick("MULAI PERMAINAN", "START A GAME")}
               </p>
 
               <h2 className="mt-2 text-xl font-bold">
-                Buat ruang baru
+                {pick("Buat room baru", "Create a new room")}
               </h2>
             </div>
 
@@ -261,7 +275,7 @@ export default function QuizGame() {
                 htmlFor="create-name"
                 className="text-sm font-semibold text-zinc-200"
               >
-                Nama panggilanmu
+                {pick("Nama panggilanmu", "Your display name")}
               </label>
 
               <input
@@ -274,7 +288,7 @@ export default function QuizGame() {
                 maxLength={20}
                 required
                 autoComplete="nickname"
-                placeholder="Misalnya: Ara"
+                placeholder={pick("Misalnya: Ara", "For example: Alex")}
                 className="mt-2 h-13 w-full rounded-2xl border border-white/10 bg-black/20 px-4 text-white outline-none transition placeholder:text-zinc-600 focus:border-violet-400/60 focus:bg-black/30 focus:ring-4 focus:ring-violet-500/10"
               />
 
@@ -294,11 +308,11 @@ export default function QuizGame() {
                 {busy ? (
                   <>
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                    Menyiapkan…
+                    {pick("Menyiapkan…", "Creating…")}
                   </>
                 ) : (
                   <>
-                    Buat room
+                    {pick("Buat room", "Create room")}
                     <span aria-hidden="true">→</span>
                   </>
                 )}
@@ -308,7 +322,7 @@ export default function QuizGame() {
             <div className="flex items-center gap-3 px-6 sm:px-8">
               <div className="h-px flex-1 bg-white/10" />
               <span className="text-xs font-medium text-zinc-600">
-                ATAU
+                {pick("ATAU", "OR")}
               </span>
               <div className="h-px flex-1 bg-white/10" />
             </div>
@@ -321,7 +335,7 @@ export default function QuizGame() {
                 htmlFor="room-code"
                 className="text-sm font-semibold text-zinc-200"
               >
-                Masuk dengan kode room
+                {pick("Masuk dengan kode room", "Enter a room code")}
               </label>
 
               <div className="mt-2 flex gap-2">
@@ -338,7 +352,7 @@ export default function QuizGame() {
                   }
                   required
                   autoComplete="off"
-                  placeholder="KODE ROOM"
+                  placeholder={pick("KODE ROOM", "ROOM CODE")}
                   className="h-13 min-w-0 flex-1 rounded-2xl border border-white/10 bg-black/20 px-4 font-mono font-bold uppercase tracking-[0.15em] text-white outline-none transition placeholder:font-sans placeholder:font-normal placeholder:tracking-normal placeholder:text-zinc-600 focus:border-violet-400/60 focus:ring-4 focus:ring-violet-500/10"
                 />
 
@@ -347,7 +361,7 @@ export default function QuizGame() {
                   disabled={busy || roomCode.length < 6}
                   className="min-h-13 rounded-2xl border border-white/10 bg-white/[0.06] px-5 font-bold transition hover:border-violet-400/40 hover:bg-violet-400/10 focus:outline-none focus:ring-2 focus:ring-violet-400/60 disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  Buka
+                  {pick("Buka", "Open")}
                 </button>
               </div>
             </form>
@@ -374,19 +388,19 @@ export default function QuizGame() {
               </div>
 
               <p className="mt-5 text-xs font-black tracking-[0.2em] text-violet-200">
-                UNDANGAN BERMAIN
+                {pick("UNDANGAN BERMAIN", "GAME INVITATION")}
               </p>
 
               <h1 className="mt-3 text-3xl font-black">
                 {room.players.host.name}
                 <span className="block text-zinc-400">
-                  mengundangmu
+                  {pick("mengundangmu", "invited you")}
                 </span>
               </h1>
 
               <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-4 py-2">
                 <span className="text-xs text-zinc-500">
-                  ROOM
+                  {pick("RUANG", "ROOM")}
                 </span>
                 <strong className="font-mono tracking-[0.18em]">
                   {room.code}
@@ -398,10 +412,13 @@ export default function QuizGame() {
               {roomFull ? (
                 <div className="rounded-2xl border border-amber-400/20 bg-amber-400/10 p-5 text-center">
                   <p className="font-bold text-amber-100">
-                    Room sudah penuh
+                    {pick("Room sudah penuh", "This room is full")}
                   </p>
                   <p className="mt-2 text-sm leading-6 text-amber-100/60">
-                    Room ini sudah memiliki dua pemain.
+                    {pick(
+                      "Room ini sudah memiliki dua pemain.",
+                      "Two players have already joined this room.",
+                    )}
                   </p>
                 </div>
               ) : (
@@ -410,7 +427,7 @@ export default function QuizGame() {
                     htmlFor="join-name"
                     className="text-sm font-semibold text-zinc-200"
                   >
-                    Nama panggilanmu
+                    {pick("Nama panggilanmu", "Your display name")}
                   </label>
 
                   <input
@@ -423,7 +440,10 @@ export default function QuizGame() {
                     maxLength={20}
                     required
                     autoComplete="nickname"
-                    placeholder="Misalnya: Bima"
+                    placeholder={pick(
+                      "Misalnya: Bima",
+                      "For example: Sam",
+                    )}
                     className="mt-2 h-13 w-full rounded-2xl border border-white/10 bg-black/20 px-4 outline-none transition placeholder:text-zinc-600 focus:border-violet-400/60 focus:ring-4 focus:ring-violet-500/10"
                   />
 
@@ -435,11 +455,11 @@ export default function QuizGame() {
                     {busy ? (
                       <>
                         <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                        Bergabung…
+                        {pick("Bergabung…", "Joining…")}
                       </>
                     ) : (
                       <>
-                        Gabung bermain
+                        {pick("Gabung bermain", "Join game")}
                         <span aria-hidden="true">→</span>
                       </>
                     )}
@@ -454,7 +474,10 @@ export default function QuizGame() {
                 onClick={leaveRoom}
                 className="mt-6 w-full text-center text-sm text-zinc-500 transition hover:text-white"
               >
-                Bukan room yang kamu cari?
+                {pick(
+                  "Bukan room yang kamu cari?",
+                  "Looking for a different room?",
+                )}
               </button>
             </div>
           </section>
@@ -477,21 +500,23 @@ export default function QuizGame() {
 
             <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-bold text-emerald-300">
               <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
-              MENUNGGU PASANGAN
+              {pick("MENUNGGU PASANGAN", "WAITING FOR PARTNER")}
             </div>
 
             <h1 className="mt-6 text-2xl font-black">
-              Room sudah siap
+              {pick("Room sudah siap", "Your room is ready")}
             </h1>
 
             <p className="mt-2 text-sm leading-6 text-zinc-400">
-              Bagikan tautan atau kode berikut kepada
-              pasanganmu.
+              {pick(
+                "Bagikan tautan atau kode berikut kepada pasanganmu.",
+                "Share this link or room code with your partner.",
+              )}
             </p>
 
             <div className="mt-7 rounded-3xl border border-dashed border-violet-300/25 bg-violet-400/[0.07] p-6">
               <p className="text-xs font-bold tracking-[0.18em] text-zinc-500">
-                KODE ROOM
+                {pick("KODE ROOM", "ROOM CODE")}
               </p>
 
               <p className="mt-3 font-mono text-4xl font-black tracking-[0.2em] text-violet-100 sm:text-5xl">
@@ -508,13 +533,15 @@ export default function QuizGame() {
                 {copied ? "✓" : "⧉"}
               </span>
               {copied
-                ? "Tautan berhasil disalin"
-                : "Salin tautan undangan"}
+                ? pick("Tautan berhasil disalin", "Invitation link copied")
+                : pick("Salin tautan undangan", "Copy invitation link")}
             </button>
 
             <p className="mt-5 text-xs text-zinc-600">
-              Permainan otomatis dimulai setelah pasanganmu
-              bergabung.
+              {pick(
+                "Permainan dimulai otomatis setelah pasanganmu bergabung.",
+                "The game starts automatically when your partner joins.",
+              )}
             </p>
 
             <ErrorNotice message={error} />
@@ -524,7 +551,7 @@ export default function QuizGame() {
               onClick={leaveRoom}
               className="mt-6 text-sm text-zinc-500 transition hover:text-white"
             >
-              Keluar dari room
+              {pick("Keluar dari room", "Leave room")}
             </button>
           </section>
         </div>
@@ -534,12 +561,15 @@ export default function QuizGame() {
 
   const quiz = room.quiz;
   const viewer = room.you;
-  const question = quiz.question;
+  const question = quiz.question
+    ? getLocalizedQuizQuestion(quiz.question.id, locale)
+    : null;
   const guesser = otherPlayer(quiz.subject);
   const subjectName = playerName(room, quiz.subject);
   const guesserName = playerName(room, guesser);
   const hostName = room.players.host.name;
-  const guestName = room.players.guest?.name ?? "Pasangan";
+  const guestName =
+    room.players.guest?.name ?? pick("Pasangan", "Partner");
 
   const progress = Math.min(
     100,
@@ -558,10 +588,19 @@ export default function QuizGame() {
 
   const resultMessage =
     quiz.scores.host === quiz.scores.guest
-      ? "Kalian sama kuat malam ini."
+      ? pick(
+          "Skor kalian sama pada permainan ini.",
+          "You finished with the same score.",
+        )
       : quiz.scores.host > quiz.scores.guest
-        ? `${hostName} paling jago menebak malam ini.`
-        : `${guestName} paling jago menebak malam ini.`;
+        ? pick(
+            `${hostName} paling akurat menebak pilihan pasangan.`,
+            `${hostName} made the most accurate predictions.`,
+          )
+        : pick(
+            `${guestName} paling akurat menebak pilihan pasangan.`,
+            `${guestName} made the most accurate predictions.`,
+          );
 
   return (
     <Shell>
@@ -572,12 +611,15 @@ export default function QuizGame() {
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)]" />
                 <p className="truncate text-xs font-bold tracking-[0.16em] text-zinc-400">
-                  ROOM {room.code}
+                  {pick("RUANG", "ROOM")} {room.code}
                 </p>
               </div>
 
               <h1 className="mt-2 truncate text-xl font-black sm:text-2xl">
-                Seberapa Kenal Kamu?
+                {pick(
+                  "Seberapa Kenal Kamu?",
+                  "How Well Do You Know Each Other?",
+                )}
               </h1>
             </div>
 
@@ -586,7 +628,9 @@ export default function QuizGame() {
               onClick={() => void copyInvite()}
               className="shrink-0 rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-xs font-semibold text-zinc-300 transition hover:border-violet-400/30 hover:bg-violet-400/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-violet-400/60"
             >
-              {copied ? "✓ Tersalin" : "⧉ Undang"}
+              {copied
+                ? pick("✓ Tersalin", "✓ Copied")
+                : pick("⧉ Undang", "⧉ Invite")}
             </button>
           </div>
         </header>
@@ -611,14 +655,14 @@ export default function QuizGame() {
                   {hostName}
                 </p>
                 <p className="text-xs text-zinc-500">
-                  {viewer === "host" ? "Kamu" : "Host"}
+                  {viewer === "host" ? pick("Kamu", "You") : "Host"}
                 </p>
               </div>
             </div>
 
             <div className="mt-4 flex items-end justify-between">
               <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                Poin
+                {pick("Poin", "Points")}
               </span>
               <strong className="text-3xl font-black text-pink-300">
                 {quiz.scores.host}
@@ -646,15 +690,15 @@ export default function QuizGame() {
                 </p>
                 <p className="text-xs text-zinc-500">
                   {viewer === "guest"
-                    ? "Kamu"
-                    : "Pasangan"}
+                    ? pick("Kamu", "You")
+                    : pick("Pasangan", "Partner")}
                 </p>
               </div>
             </div>
 
             <div className="mt-4 flex items-end justify-between">
               <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                Poin
+                {pick("Poin", "Points")}
               </span>
               <strong className="text-3xl font-black text-violet-300">
                 {quiz.scores.guest}
@@ -671,7 +715,7 @@ export default function QuizGame() {
               </div>
 
               <p className="mt-7 text-xs font-black tracking-[0.2em] text-violet-300">
-                DATE NIGHT SELESAI
+                {pick("PERMAINAN SELESAI", "GAME COMPLETE")}
               </p>
 
               <h2 className="mt-3 text-3xl font-black sm:text-4xl">
@@ -679,8 +723,10 @@ export default function QuizGame() {
               </h2>
 
               <p className="mx-auto mt-4 max-w-md leading-7 text-zinc-400">
-                Yang paling penting bukan skornya, tetapi
-                cerita baru yang kalian temukan.
+                {pick(
+                  "Gunakan jawaban yang berbeda sebagai bahan percakapan setelah permainan.",
+                  "Use your different answers as conversation starters after the game.",
+                )}
               </p>
 
               <div className="mx-auto mt-8 grid max-w-md grid-cols-[1fr_auto_1fr] items-center gap-3">
@@ -712,7 +758,7 @@ export default function QuizGame() {
                 onClick={leaveRoom}
                 className="mt-9 min-h-13 w-full max-w-md rounded-2xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-6 font-bold shadow-lg shadow-violet-950/40 transition hover:-translate-y-0.5"
               >
-                Pilih game berikutnya
+                {pick("Pilih game berikutnya", "Choose another game")}
               </button>
             </div>
           ) : (
@@ -720,14 +766,20 @@ export default function QuizGame() {
               <div className="border-b border-white/10 px-5 py-5 sm:px-8">
                 <div className="flex items-center justify-between gap-4 text-xs">
                   <span className="font-bold text-zinc-300">
-                    Pertanyaan {quiz.roundIndex + 1} dari{" "}
-                    {quiz.roundCount}
+                    {pick("Pertanyaan", "Question")} {quiz.roundIndex + 1}{" "}
+                    {pick("dari", "of")} {quiz.roundCount}
                   </span>
 
                   <span className="truncate text-right text-violet-300">
                     {quiz.phase === "guesser-answer"
-                      ? `${guesserName} menebak`
-                      : `${subjectName} menjawab`}
+                      ? pick(
+                          `${guesserName} sedang menebak`,
+                          `${guesserName} is predicting`,
+                        )
+                      : pick(
+                          `${subjectName} sedang menjawab`,
+                          `${subjectName} is answering`,
+                        )}
                   </span>
                 </div>
 
@@ -745,22 +797,26 @@ export default function QuizGame() {
                 <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/20 bg-violet-400/10 px-3 py-1.5 text-xs font-bold text-violet-200">
                   <span aria-hidden="true">✦</span>
                   {quiz.phase === "reveal"
-                    ? "HASIL RONDE"
-                    : "PILIH SATU JAWABAN"}
+                    ? pick("HASIL RONDE", "ROUND RESULT")
+                    : pick("PILIH SATU JAWABAN", "CHOOSE ONE ANSWER")}
                 </div>
 
                 <h2 className="mt-5 text-2xl font-black leading-snug text-white sm:text-3xl">
                   {question?.prompt ??
-                    "Pertanyaan tidak tersedia."}
+                    pick(
+                      "Pertanyaan tidak tersedia.",
+                      "Question unavailable.",
+                    )}
                 </h2>
 
                 {quiz.phase === "subject-answer" &&
                   (viewer === quiz.subject ? (
                     <>
                       <p className="mt-3 text-sm leading-6 text-zinc-400">
-                        Jawab sebagai dirimu sendiri. Pilihanmu
-                        akan dirahasiakan sampai pasanganmu
-                        menebak.
+                        {pick(
+                          "Jawab sesuai pilihanmu. Jawaban tetap rahasia sampai pasanganmu selesai menebak.",
+                          "Choose your own answer. It stays private until your partner finishes predicting.",
+                        )}
                       </p>
 
                       <Choices
@@ -786,11 +842,17 @@ export default function QuizGame() {
                       </div>
 
                       <p className="mt-4 font-semibold">
-                        {subjectName} sedang memilih
+                        {pick(
+                          `${subjectName} sedang memilih`,
+                          `${subjectName} is choosing`,
+                        )}
                       </p>
 
                       <p className="mt-2 text-sm text-zinc-500">
-                        Jawabannya tetap rahasia untukmu.
+                        {pick(
+                          "Jawabannya tetap rahasia untukmu.",
+                          "Their answer remains private for now.",
+                        )}
                       </p>
                     </div>
                   ))}
@@ -799,11 +861,14 @@ export default function QuizGame() {
                   (viewer === guesser ? (
                     <>
                       <p className="mt-3 text-sm leading-6 text-zinc-400">
-                        Menurutmu, jawaban mana yang dipilih{" "}
+                        {pick(
+                          "Menurutmu, jawaban mana yang dipilih",
+                          "Which answer do you think",
+                        )}{" "}
                         <strong className="text-violet-200">
                           {subjectName}
                         </strong>
-                        ?
+                        {pick("?", " chose?")}
                       </p>
 
                       <Choices
@@ -823,7 +888,7 @@ export default function QuizGame() {
                       className="mt-7 rounded-3xl border border-white/10 bg-black/15 p-5"
                     >
                       <p className="text-xs font-bold uppercase tracking-[0.16em] text-zinc-500">
-                        Jawabanmu
+                        {pick("Jawabanmu", "Your answer")}
                       </p>
 
                       <p className="mt-3 text-lg font-bold text-violet-100">
@@ -838,7 +903,10 @@ export default function QuizGame() {
                         </span>
 
                         <p className="text-sm text-zinc-500">
-                          Menunggu {guesserName} menebak…
+                          {pick(
+                            `Menunggu ${guesserName} menebak…`,
+                            `Waiting for ${guesserName} to predict…`,
+                          )}
                         </p>
                       </div>
                     </div>
@@ -872,21 +940,30 @@ export default function QuizGame() {
                           }`}
                         >
                           {quiz.matched
-                            ? "Tebakannya cocok!"
-                            : "Belum cocok kali ini"}
+                            ? pick("Tebakannya cocok!", "Correct prediction")
+                            : pick(
+                                "Jawabannya berbeda",
+                                "Different answers this round",
+                              )}
                         </h3>
 
                         <p className="mt-2 text-sm text-zinc-500">
                           {quiz.matched
-                            ? `${guesserName} mendapat satu poin.`
-                            : "Kesempatan bagus untuk saling bercerita."}
+                            ? pick(
+                                `${guesserName} mendapat satu poin.`,
+                                `${guesserName} earns one point.`,
+                              )
+                            : pick(
+                                "Bandingkan alasan di balik pilihan kalian.",
+                                "Compare the reasons behind your choices.",
+                              )}
                         </p>
                       </div>
 
                       <div className="grid border-t border-white/10 sm:grid-cols-2">
                         <div className="border-b border-white/10 p-5 sm:border-b-0 sm:border-r">
                           <p className="text-xs font-bold uppercase tracking-wider text-zinc-500">
-                            Jawaban {subjectName}
+                            {pick("Jawaban", "Answer from")} {subjectName}
                           </p>
                           <p className="mt-2 font-bold leading-6">
                             {answerText(quiz.subjectAnswer)}
@@ -895,7 +972,7 @@ export default function QuizGame() {
 
                         <div className="p-5">
                           <p className="text-xs font-bold uppercase tracking-wider text-zinc-500">
-                            Tebakan {guesserName}
+                            {pick("Tebakan", "Prediction by")} {guesserName}
                           </p>
                           <p className="mt-2 font-bold leading-6">
                             {answerText(quiz.guessAnswer)}
@@ -917,8 +994,14 @@ export default function QuizGame() {
                       >
                         {quiz.roundIndex + 1 ===
                         quiz.roundCount
-                          ? "Lihat hasil akhir"
-                          : "Pertanyaan berikutnya"}
+                          ? pick(
+                              "Lihat hasil akhir",
+                              "View final results",
+                            )
+                          : pick(
+                              "Pertanyaan berikutnya",
+                              "Next question",
+                            )}
                         <span aria-hidden="true">→</span>
                       </button>
                     ) : (
@@ -926,7 +1009,10 @@ export default function QuizGame() {
                         aria-live="polite"
                         className="mt-5 rounded-2xl bg-white/[0.035] px-4 py-3 text-center text-sm text-zinc-500"
                       >
-                        Menunggu host melanjutkan…
+                        {pick(
+                          "Menunggu host melanjutkan…",
+                          "Waiting for the host to continue…",
+                        )}
                       </div>
                     )}
                   </div>

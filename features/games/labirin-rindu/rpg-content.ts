@@ -1,3 +1,7 @@
+import type { AppLocale } from "@/features/platform/i18n/locale";
+
+import { MAZE_DANGERS_EN, MAZE_SKILLS_EN } from "./rpg-content.en";
+
 export type MazeSkillId =
   | "peluk-pelindung"
   | "pegangan-erat"
@@ -201,6 +205,70 @@ export function getMazeDanger(id: MazeDangerKind) {
   }
 
   return danger;
+}
+
+export function localizeMazeSkill(
+  skill: MazeSkillDefinition,
+  locale: AppLocale,
+): MazeSkillDefinition {
+  return locale === "id"
+    ? skill
+    : { ...skill, ...MAZE_SKILLS_EN[skill.id] };
+}
+
+export function localizeMazeDanger(
+  danger: MazeDangerDefinition,
+  locale: AppLocale,
+): MazeDangerDefinition {
+  return locale === "id"
+    ? danger
+    : { ...danger, ...MAZE_DANGERS_EN[danger.id] };
+}
+
+export function localizeMazeHistoryText(
+  value: string,
+  locale: AppLocale,
+) {
+  if (locale === "id") return value;
+
+  let translated = value
+    .replace(/^Pasangan /, "Partner ")
+    .replace(/^Kalian memasuki labirin\. Bahaya dirimu hanya terlihat oleh pasanganmu\.$/, "You entered the maze. Only your partner can see the dangers around you.")
+    .replace(/^Dua Fragmen Hati bersatu\. Badai Pemisah bangkit untuk menguji kalian\.$/, "The two Heart Fragments joined. The Storm of Separation rose to test you.")
+    .replace(/^Bayangan Sepi berhasil menyusul (.+)\.$/, "The Shadow of Loneliness caught up with $1.")
+    .replace(/^(.+) mengirim rute (\d+) langkah\.$/, "$1 sent a $2-step route.")
+    .replace(/^Kalian akhirnya bertemu\. Hati dipulihkan dan Energi Ikatan terisi penuh\.$/, "You finally met. Your Hearts were restored and Bond Energy was fully replenished.")
+    .replace(/^(.+) menabrak dinding\. Rangkaian langkah terhenti\.$/, "$1 hit a wall. The remaining route was cancelled.")
+    .replace(/^(.+) menemukan Fragmen Hati\.$/, "$1 found a Heart Fragment.")
+    .replace(/^(.+) sudah membawa satu Fragmen Hati\. Sisakan fragmen ini untuk pasangan\.$/, "$1 already carries a Heart Fragment. Leave this one for their partner.")
+    .replace(/^(.+) menemukan Altar Ikatan\.$/, "$1 found a Bond Altar.")
+    .replace(/^Cahaya terakhir padam di dalam labirin\.$/, "The final Journey Light went out inside the maze.")
+    .replace(/^Cahaya terakhir padam sebelum perjalanan selesai\.$/, "The final Journey Light went out before the journey was complete.")
+    .replace(/^(.+) menyelesaikan (\d+) langkah\.$/, "$1 completed $2 steps.")
+    .replace(/^Salah satu hati padam sebelum perjalanan selesai\.$/, "One player's Hearts ran out before the journey was complete.")
+    .replace(/^(.+) menghadapi bahaya tanpa perlindungan\.$/, "$1 faced the danger without protection.")
+    .replace(/^Badai memisahkan kalian sebelum perlindungan sempat terbentuk\.$/, "The storm separated you before your protection could take hold.")
+    .replace(/^Kalian saling melindungi sampai Badai Pemisah akhirnya reda\.$/, "You protected each other until the Storm of Separation finally subsided.")
+    .replace(/^Gelombang (\d+) terlewati\. Badai kembali menguat\.$/, "Wave $1 passed. The storm is gathering strength again.");
+
+  for (const skill of MAZE_SKILLS) {
+    const englishName = MAZE_SKILLS_EN[skill.id].name;
+    translated = translated
+      .replace(
+        new RegExp(`^(.+) memperoleh ${skill.name} untuk menjaga pasangannya\\.$`),
+        `$1 gained ${englishName} to protect their partner.`,
+      )
+      .replace(
+        new RegExp(`^(.+) menggunakan ${skill.name} untuk pasangannya\\.$`),
+        `$1 used ${englishName} for their partner.`,
+      )
+      .replace(
+        new RegExp(`^(.+) melindungi pasangannya dengan ${skill.name}\\.$`),
+        `$1 protected their partner with ${englishName}.`,
+      );
+  }
+
+  return translated;
 }
 
 export function isMazeSkillId(value: unknown): value is MazeSkillId {

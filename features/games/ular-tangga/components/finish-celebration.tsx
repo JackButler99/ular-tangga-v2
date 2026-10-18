@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useState } from "react";
 
+import { useAppLanguage } from "@/features/platform/i18n/language-provider";
+
 type FinishCelebrationProps = {
   winnerName: string;
 };
@@ -608,6 +610,7 @@ const CSS = `
 export function FinishCelebration({
   winnerName,
 }: FinishCelebrationProps) {
+  const { pick } = useAppLanguage();
   const [open, setOpen] = useState(true);
 
   if (!open) {
@@ -634,7 +637,7 @@ export function FinishCelebration({
         </div>
 
         <p className="love-label">
-          A LITTLE LOVE CUTSCENE
+          {pick("PERAYAAN KECIL UNTUK BERDUA", "A SMALL CELEBRATION FOR TWO")}
         </p>
 
         <div
@@ -777,12 +780,18 @@ export function FinishCelebration({
 
         <div className="love-copy">
           <h2 id="love-title">
-            {winnerName} sampai duluan!
+            {pick(
+              `${winnerName} sampai lebih dahulu!`,
+              `${winnerName} arrived first!`,
+            )}
           </h2>
 
           <p>
-            Dua perjalanan, satu tujuan. Permainan selesai,
-            tetapi cerita kalian masih terus berjalan. ♥
+            {pick(
+              "Dua perjalanan, satu tujuan. Permainan selesai, tetapi cerita kalian terus berjalan.",
+              "Two journeys, one destination. The game is over, but your story continues.",
+            )}{" "}
+            ♥
           </p>
 
           <button
@@ -790,7 +799,7 @@ export function FinishCelebration({
             type="button"
             onClick={() => setOpen(false)}
           >
-            Lanjut lihat hasil
+            {pick("Lanjut melihat hasil", "Continue to results")}
           </button>
         </div>
       </section>

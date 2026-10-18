@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { useAppLanguage } from "@/features/platform/i18n/language-provider";
+
 type MazeFinishCelebrationProps = {
   hostName: string;
   guestName: string;
@@ -1055,6 +1057,7 @@ export function MazeFinishCelebration({
   hostName,
   guestName,
 }: MazeFinishCelebrationProps) {
+  const { pick } = useAppLanguage();
   const [open, setOpen] = useState(true);
 
   if (!open) {
@@ -1065,7 +1068,10 @@ export function MazeFinishCelebration({
     <div
       role="dialog"
       aria-modal="true"
-      aria-label={`Cutscene kemenangan ${hostName} dan ${guestName}`}
+      aria-label={pick(
+        `Perayaan kemenangan ${hostName} dan ${guestName}`,
+        `Victory celebration for ${hostName} and ${guestName}`,
+      )}
       className="maze-cutscene fixed inset-0 z-[9999] grid place-items-center overflow-hidden bg-[radial-gradient(circle_at_50%_44%,rgba(244,114,182,0.22),transparent_30%),linear-gradient(145deg,rgba(8,8,22,0.98),rgba(18,8,30,0.99))] p-3 text-white backdrop-blur-xl"
     >
       <style>{CSS}</style>
@@ -1087,7 +1093,7 @@ export function MazeFinishCelebration({
         </div>
 
         <p className="relative z-20 text-[10px] font-black tracking-[0.24em] text-rose-300">
-          JALAN PULANG DITEMUKAN
+          {pick("JALAN PULANG DITEMUKAN", "THE WAY HOME IS OPEN")}
         </p>
 
         <div
@@ -1222,14 +1228,14 @@ export function MazeFinishCelebration({
             id="maze-ending-title"
             className="mx-auto max-w-xl text-[clamp(27px,6vw,40px)] font-black leading-[1.08]"
           >
-            Kalian menemukan jalan pulang.
+            {pick("Kalian menemukan jalan pulang.", "You found the way home.")}
           </h2>
 
           <p className="mx-auto mt-3 max-w-lg text-sm leading-7 text-slate-300">
-            Kalian tidak keluar karena salah satu lebih
-            kuat. Kalian pulang karena tetap saling
-            menunjukkan arah, bahkan ketika jalan terasa
-            gelap.
+            {pick(
+              "Kalian tidak berhasil karena salah satu lebih kuat. Kalian pulang karena terus saling menunjukkan arah, bahkan ketika jalan terasa gelap.",
+              "You did not succeed because one of you was stronger. You found your way home by continuing to guide each other, even when the path was dark.",
+            )}
           </p>
 
           <button
@@ -1237,7 +1243,7 @@ export function MazeFinishCelebration({
             onClick={() => setOpen(false)}
             className="mt-6 w-full rounded-2xl bg-gradient-to-r from-violet-500 via-pink-500 to-rose-500 px-5 py-3.5 font-black shadow-[0_14px_38px_rgba(236,72,153,0.26)] transition hover:-translate-y-0.5 hover:brightness-110 active:scale-[0.98]"
           >
-            Lihat akhir perjalanan
+            {pick("Lihat akhir perjalanan", "View journey results")}
           </button>
         </div>
       </section>

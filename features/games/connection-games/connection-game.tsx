@@ -9,6 +9,8 @@ import {
 
 import { QuestionCountPicker } from "@/features/platform/components/question-count-picker";
 import type { ConnectionGameSlug } from "@/features/platform/game-registry";
+import { useAppLanguage } from "@/features/platform/i18n/language-provider";
+import { localizeRuntimeText } from "@/features/platform/i18n/runtime-text";
 import {
   DEFAULT_QUESTION_COUNT,
   type QuestionCount,
@@ -19,6 +21,7 @@ import type {
   PickOneAnswer,
   PickOneChapter,
 } from "./content";
+import { getLocalizedPickOneRound } from "./content";
 import type { ConnectionRoomView } from "./room-view";
 import { useConnectionRoom } from "./use-connection-room";
 
@@ -36,6 +39,8 @@ function Shell({
 }: {
   children: ReactNode;
 }) {
+  const { pick } = useAppLanguage();
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#080710] px-5 py-8 text-white">
       <div className="pointer-events-none absolute -left-32 top-8 h-80 w-80 rounded-full bg-fuchsia-500/10 blur-3xl" />
@@ -47,7 +52,7 @@ function Shell({
             href="/"
             className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-300 transition hover:border-white/20 hover:text-white"
           >
-            ← Katalog
+            ← {pick("Katalog", "Games")}
           </Link>
 
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-fuchsia-400/30 bg-fuchsia-400/10 text-xl text-fuchsia-300">
@@ -66,9 +71,11 @@ function ErrorMessage({
 }: {
   message: string;
 }) {
+  const { locale } = useAppLanguage();
+
   return message ? (
     <p className="mt-5 rounded-2xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-200">
-      {message}
+      {localizeRuntimeText(locale, message)}
     </p>
   ) : null;
 }
@@ -78,45 +85,61 @@ function GameInstructions({
 }: {
   compact?: boolean;
 }) {
+  const { pick } = useAppLanguage();
+
+  const ruleItems = [
+    {
+      number: "1",
+      title: pick("Pilih secara pribadi", "Choose privately"),
+      description: pick(
+        "Kalian memilih A atau B tanpa memberi petunjuk. Jawaban terbuka setelah keduanya memilih.",
+        "Each of you chooses A or B without giving hints. Answers are revealed after both choices are submitted.",
+      ),
+    },
+    {
+      number: "2",
+      title: pick("Gunakan Heart Bet", "Use a Heart Bet"),
+      description: pick(
+        "Masing-masing memiliki dua bet. Aktifkan sebelum memilih jika yakin jawaban kalian akan sama.",
+        "Each player has two bets. Activate one before choosing if you expect your answers to match.",
+      ),
+    },
+    {
+      number: "3",
+      title: pick("Kumpulkan spark", "Collect sparks"),
+      description: pick(
+        "Pilihan yang sama memberi satu spark. Setiap ronde keempat adalah Jackpot dengan dua spark dasar.",
+        "A match earns one spark. Every fourth round is a Jackpot worth two base sparks.",
+      ),
+    },
+    {
+      number: "4",
+      title: pick("Tinjau hasilnya", "Review the result"),
+      description: pick(
+        "Bangun streak, selesaikan misi setelah hasil terbuka, lalu host melanjutkan ke ronde berikutnya.",
+        "Build a streak, complete the post-reveal prompt, then let the host continue to the next round.",
+      ),
+    },
+  ];
+
   const rules = (
     <div className="mt-5 border-t border-white/10 pt-5">
       <p className="text-sm leading-6 text-zinc-400">
-        Tujuan permainan adalah mengumpulkan{" "}
+        {pick(
+          "Tujuan permainan ini adalah mengumpulkan",
+          "The goal is to collect",
+        )}{" "}
         <strong className="text-fuchsia-200">
           spark
         </strong>{" "}
-        dengan memilih jawaban yang sama. Tidak ada
-        jawaban benar atau salah. Pilihan berbeda justru
-        membuka bahan obrolan baru.
+        {pick(
+          "dengan memilih jawaban yang sama. Tidak ada jawaban benar atau salah; pilihan yang berbeda menjadi bahan percakapan baru.",
+          "by choosing the same answer. There are no right or wrong answers; different choices create new conversations.",
+        )}
       </p>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
-        {[
-          {
-            number: "1",
-            title: "Pilih diam-diam",
-            description:
-              "Kalian memilih A atau B tanpa memberi bocoran. Jawaban baru terbuka setelah keduanya memilih.",
-          },
-          {
-            number: "2",
-            title: "Gunakan Heart Bet",
-            description:
-              "Masing-masing memiliki 2 bet. Aktifkan sebelum memilih jika yakin jawaban kalian akan sama.",
-          },
-          {
-            number: "3",
-            title: "Kumpulkan spark",
-            description:
-              "Pilihan sama memberi 1 spark. Setiap ronde ke-4 adalah Jackpot dengan 2 spark dasar.",
-          },
-          {
-            number: "4",
-            title: "Nikmati hasilnya",
-            description:
-              "Bangun streak, lakukan misi setelah reveal, lalu host melanjutkan ke ronde berikutnya.",
-          },
-        ].map((rule) => (
+        {ruleItems.map((rule) => (
           <div
             key={rule.number}
             className="flex gap-3 rounded-2xl bg-black/20 p-4"
@@ -140,34 +163,35 @@ function GameInstructions({
 
       <div className="mt-5 rounded-2xl border border-rose-300/20 bg-rose-300/[0.07] p-4">
         <p className="text-xs font-black tracking-[0.16em] text-rose-200">
-          CARA KERJA HEART BET
+          {pick("CARA KERJA HEART BET", "HOW HEART BETS WORK")}
         </p>
 
         <p className="mt-2 text-sm leading-6 text-zinc-300">
-          Setiap Heart Bet menambah{" "}
-          <strong>+1 spark</strong> jika jawaban kalian
-          sama. Jika kalian berdua memasang bet, bonusnya
-          menjadi +2. Bet tetap terpakai ketika jawaban
-          berbeda, jadi pilih momennya dengan cermat.
+          {pick("Setiap Heart Bet menambah", "Each Heart Bet adds")}{" "}
+          <strong>+1 spark</strong>{" "}
+          {pick(
+            "jika jawaban kalian sama. Jika kalian berdua memasang bet, bonusnya menjadi +2. Bet tetap terpakai ketika jawaban berbeda, jadi pilih waktunya dengan cermat.",
+            "when your answers match. If both of you place a bet, the bonus becomes +2. A bet is still spent when answers differ, so use it carefully.",
+          )}
         </p>
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
         {[
           {
-            label: "Jawaban sama",
+            label: pick("Jawaban sama", "Matching answers"),
             score: "+1 ✨",
           },
           {
-            label: "Sama + 1 bet",
+            label: pick("Sama + 1 bet", "Match + 1 bet"),
             score: "+2 ✨",
           },
           {
-            label: "Sama + 2 bet",
+            label: pick("Sama + 2 bet", "Match + 2 bets"),
             score: "+3 ✨",
           },
           {
-            label: "Jackpot + 2 bet",
+            label: pick("Jackpot + 2 bet", "Jackpot + 2 bets"),
             score: "+4 ✨",
           },
         ].map((item) => (
@@ -187,9 +211,10 @@ function GameInstructions({
       </div>
 
       <p className="mt-4 text-xs leading-5 text-zinc-500">
-        Streak bertambah ketika jawaban kalian sama secara
-        berurutan dan kembali ke nol ketika pilihan berbeda.
-        Hanya host yang dapat melanjutkan ronde.
+        {pick(
+          "Streak bertambah untuk setiap jawaban sama berturut-turut dan kembali ke nol ketika pilihan berbeda. Hanya host yang dapat melanjutkan ronde.",
+          "Your streak grows with consecutive matches and resets when your choices differ. Only the host can continue the round.",
+        )}
       </p>
     </div>
   );
@@ -204,11 +229,14 @@ function GameInstructions({
 
           <span className="min-w-0 flex-1">
             <strong className="block text-sm">
-              Cara bermain
+              {pick("Cara bermain", "How to play")}
             </strong>
 
             <span className="text-xs text-zinc-500">
-              Aturan spark, Heart Bet, dan Jackpot
+              {pick(
+                "Aturan spark, Heart Bet, dan Jackpot",
+                "Spark, Heart Bet, and Jackpot rules",
+              )}
             </span>
           </span>
 
@@ -231,11 +259,11 @@ function GameInstructions({
 
         <div>
           <p className="text-xs font-black tracking-[0.18em] text-fuchsia-300">
-            CARA BERMAIN
+            {pick("CARA BERMAIN", "HOW TO PLAY")}
           </p>
 
           <h2 className="mt-1 text-xl font-black">
-            Kompak menghasilkan spark
+            {pick("Pilihan selaras menghasilkan spark", "Matching choices earn sparks")}
           </h2>
         </div>
       </div>
@@ -249,47 +277,56 @@ const CHAPTER_META: Record<
   PickOneChapter,
   {
     emoji: string;
-    label: string;
+    label: { id: string; en: string };
   }
 > = {
   pemanasan: {
     emoji: "⚡",
-    label: "Pemanasan",
+    label: { id: "Pemanasan", en: "Warm-up" },
   },
   koneksi: {
     emoji: "💞",
-    label: "Makin Dekat",
+    label: { id: "Makin Dekat", en: "Closer" },
   },
   "lebih-dalam": {
     emoji: "🌙",
-    label: "Lebih Dalam",
+    label: { id: "Lebih Dalam", en: "Deeper" },
   },
 };
 
-function resultPersona(score: number) {
+function resultPersona(
+  score: number,
+  pick: (indonesian: string, english: string) => string,
+) {
   if (score >= 75) {
     return {
       emoji: "📡",
-      title: "Duo Satu Frekuensi",
-      description:
-        "Kalian sering menangkap sinyal yang sama—bahkan sebelum sempat memberi bocoran.",
+      title: pick("Duo Satu Frekuensi", "In-Sync Duo"),
+      description: pick(
+        "Kalian sering menangkap sinyal yang sama, bahkan tanpa memberi petunjuk.",
+        "You often pick up the same signal, even without giving each other hints.",
+      ),
     };
   }
 
   if (score >= 45) {
     return {
       emoji: "🧩",
-      title: "Duo Saling Melengkapi",
-      description:
-        "Ada cukup banyak kesamaan untuk terasa dekat, dan cukup banyak perbedaan untuk terus penasaran.",
+      title: pick("Duo Saling Melengkapi", "Complementary Duo"),
+      description: pick(
+        "Kalian memiliki cukup banyak kesamaan untuk merasa dekat dan cukup banyak perbedaan untuk terus saling mengenal.",
+        "You share enough to feel close and differ enough to keep learning about each other.",
+      ),
     };
   }
 
   return {
     emoji: "🎭",
-    title: "Duo Penuh Kejutan",
-    description:
-      "Kalian sulit ditebak—dan justru punya banyak cerita baru untuk saling ditemukan.",
+    title: pick("Duo Penuh Kejutan", "Unexpected Duo"),
+    description: pick(
+      "Pilihan kalian sulit ditebak, sehingga masih banyak hal yang dapat kalian pelajari satu sama lain.",
+      "Your choices are hard to predict, leaving plenty for you to discover about each other.",
+    ),
   };
 }
 
@@ -298,6 +335,7 @@ export default function ConnectionGame({
 }: {
   gameSlug: ConnectionGameSlug;
 }) {
+  const { locale, pick } = useAppLanguage();
   const {
     room,
     busy,
@@ -346,7 +384,7 @@ export default function ConnectionGame({
           <div className="mx-auto h-10 w-10 animate-pulse rounded-2xl bg-fuchsia-400/10" />
 
           <p className="mt-5 text-zinc-400">
-            Membuka room…
+            {pick("Membuka ruang…", "Opening the room…")}
           </p>
         </div>
       </Shell>
@@ -358,17 +396,18 @@ export default function ConnectionGame({
       <Shell>
         <header className="mt-14 max-w-2xl">
           <p className="text-xs font-black tracking-[0.24em] text-fuchsia-300">
-            PILIH MANA?
+            {pick("PILIH MANA?", "PICK ONE")}
           </p>
 
           <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">
-            Dua pilihan. Satu kejutan.
+            {pick("Dua pilihan. Satu kejutan.", "Two choices. One reveal.")}
           </h1>
 
           <p className="mt-5 max-w-xl text-base leading-7 text-zinc-400">
-            Mulai dari pilihan receh, naik ke obrolan yang
-            lebih dekat, lalu pertaruhkan keyakinanmu
-            menggunakan Heart Bet.
+            {pick(
+              "Mulai dari pilihan ringan, lanjutkan ke percakapan yang lebih dekat, lalu gunakan Heart Bet saat kalian yakin akan memilih jawaban yang sama.",
+              "Begin with easy choices, move into closer conversations, then use a Heart Bet when you expect to choose the same answer.",
+            )}
           </p>
 
           <div className="mt-7 grid max-w-2xl gap-3 sm:grid-cols-3">
@@ -376,12 +415,14 @@ export default function ConnectionGame({
               <span className="text-xl">🤫</span>
 
               <strong className="mt-3 block text-sm">
-                Pilih rahasia
+                {pick("Pilih secara pribadi", "Choose privately")}
               </strong>
 
               <p className="mt-1 text-xs leading-5 text-zinc-500">
-                Jawaban baru terbuka saat kalian berdua
-                sudah memilih.
+                {pick(
+                  "Jawaban terbuka setelah kalian berdua memilih.",
+                  "Answers are revealed after both of you choose.",
+                )}
               </p>
             </div>
 
@@ -389,12 +430,14 @@ export default function ConnectionGame({
               <span className="text-xl">♥</span>
 
               <strong className="mt-3 block text-sm">
-                Pasang Heart Bet
+                {pick("Pasang Heart Bet", "Place a Heart Bet")}
               </strong>
 
               <p className="mt-1 text-xs leading-5 text-zinc-500">
-                Gunakan pada momen ketika kalian pasti
-                satu frekuensi.
+                {pick(
+                  "Gunakan ketika kalian yakin akan memilih jawaban yang sama.",
+                  "Use one when you expect your answers to match.",
+                )}
               </p>
             </div>
 
@@ -402,12 +445,14 @@ export default function ConnectionGame({
               <span className="text-xl">✨</span>
 
               <strong className="mt-3 block text-sm">
-                Kejar spark
+                {pick("Kumpulkan spark", "Collect sparks")}
               </strong>
 
               <p className="mt-1 text-xs leading-5 text-zinc-500">
-                Bangun streak dan manfaatkan ronde
-                Jackpot.
+                {pick(
+                  "Bangun streak dan manfaatkan ronde Jackpot.",
+                  "Build a streak and make the most of Jackpot rounds.",
+                )}
               </p>
             </div>
           </div>
@@ -421,14 +466,14 @@ export default function ConnectionGame({
             className="rounded-[2rem] border border-white/10 bg-white/[0.055] p-6 shadow-2xl shadow-black/20"
           >
             <p className="text-xs font-bold tracking-[0.18em] text-zinc-500">
-              BUAT ROOM BARU
+              {pick("BUAT RUANG BARU", "CREATE A NEW ROOM")}
             </p>
 
             <label
               htmlFor="create-name"
               className="mt-6 block text-sm font-medium text-zinc-300"
             >
-              Nama panggilanmu
+              {pick("Nama panggilanmu", "Your display name")}
             </label>
 
             <input
@@ -440,7 +485,7 @@ export default function ConnectionGame({
               minLength={2}
               maxLength={20}
               required
-              placeholder="Misalnya: Ara"
+              placeholder={pick("Misalnya: Ara", "For example: Alex")}
               className="mt-2 w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3.5 outline-none transition focus:border-fuchsia-400/50"
             />
 
@@ -456,8 +501,8 @@ export default function ConnectionGame({
               className="mt-6 w-full rounded-2xl bg-fuchsia-500 px-5 py-3.5 font-bold transition hover:bg-fuchsia-400 disabled:opacity-50"
             >
               {busy
-                ? "Menyiapkan…"
-                : "Buat room & undang pasangan"}
+                ? pick("Menyiapkan…", "Creating…")
+                : pick("Buat ruang dan undang pasangan", "Create room and invite partner")}
             </button>
           </form>
 
@@ -466,14 +511,14 @@ export default function ConnectionGame({
             className="rounded-[2rem] border border-white/10 bg-white/[0.035] p-6"
           >
             <p className="text-xs font-bold tracking-[0.18em] text-zinc-500">
-              PUNYA KODE?
+              {pick("PUNYA KODE?", "HAVE A CODE?")}
             </p>
 
             <label
               htmlFor="room-code"
               className="mt-6 block text-sm font-medium text-zinc-300"
             >
-              Kode room
+              {pick("Kode ruang", "Room code")}
             </label>
 
             <input
@@ -499,13 +544,14 @@ export default function ConnectionGame({
               }
               className="mt-4 w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-3.5 font-semibold hover:bg-white/10 disabled:opacity-40"
             >
-              Buka room
+              {pick("Buka ruang", "Open room")}
             </button>
 
             <p className="mt-8 rounded-2xl border border-white/5 bg-black/10 p-4 text-sm leading-6 text-zinc-500">
-              Tidak perlu akun. Room hanya untuk dua
-              pemain dan pilihan tetap rahasia sampai
-              keduanya menjawab.
+              {pick(
+                "Tidak perlu akun. Ruang hanya untuk dua pemain, dan pilihan tetap tersembunyi sampai keduanya menjawab.",
+                "No account is required. Each room is for two players, and choices stay hidden until both have answered.",
+              )}
             </p>
           </form>
         </section>
@@ -524,15 +570,15 @@ export default function ConnectionGame({
       <Shell>
         <section className="mt-16 rounded-[2rem] border border-fuchsia-400/30 bg-fuchsia-400/10 p-7 text-center sm:p-10">
           <p className="text-xs font-black tracking-[0.22em] text-fuchsia-300">
-            UNDANGAN BERMAIN
+            {pick("UNDANGAN BERMAIN", "GAME INVITATION")}
           </p>
 
           <h1 className="mt-5 text-3xl font-black">
-            {room.players.host} menunggumu.
+            {room.players.host} {pick("menunggumu.", "is waiting for you.")}
           </h1>
 
           <p className="mt-3 text-sm text-zinc-400">
-            Room{" "}
+            {pick("Ruang", "Room")}{" "}
             <strong className="font-mono text-white">
               {room.code}
             </strong>
@@ -542,7 +588,10 @@ export default function ConnectionGame({
 
           {roomFull ? (
             <p className="mt-8 rounded-2xl bg-black/20 p-4 text-zinc-300">
-              Room ini sudah memiliki dua pemain.
+              {pick(
+                "Ruang ini sudah memiliki dua pemain.",
+                "This room already has two players.",
+              )}
             </p>
           ) : (
             <form
@@ -553,7 +602,7 @@ export default function ConnectionGame({
                 htmlFor="join-name"
                 className="text-sm font-medium text-zinc-300"
               >
-                Nama panggilanmu
+                {pick("Nama panggilanmu", "Your display name")}
               </label>
 
               <input
@@ -565,7 +614,7 @@ export default function ConnectionGame({
                 minLength={2}
                 maxLength={20}
                 required
-                placeholder="Misalnya: Bima"
+                placeholder={pick("Misalnya: Bima", "For example: Sam")}
                 className="mt-2 w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3.5 outline-none focus:border-white/30"
               />
 
@@ -575,8 +624,8 @@ export default function ConnectionGame({
                 className="mt-4 w-full rounded-2xl bg-fuchsia-500 px-5 py-3.5 font-bold hover:bg-fuchsia-400 disabled:opacity-50"
               >
                 {busy
-                  ? "Bergabung…"
-                  : "Gabung bermain"}
+                  ? pick("Bergabung…", "Joining…")
+                  : pick("Gabung bermain", "Join game")}
               </button>
             </form>
           )}
@@ -588,7 +637,7 @@ export default function ConnectionGame({
             onClick={leaveRoom}
             className="mt-7 text-sm text-zinc-500 hover:text-white"
           >
-            Kembali
+            {pick("Kembali", "Back")}
           </button>
         </section>
       </Shell>
@@ -604,7 +653,7 @@ export default function ConnectionGame({
           </div>
 
           <p className="mt-7 text-xs font-bold tracking-[0.2em] text-zinc-500">
-            ROOM SIAP
+            {pick("RUANG SIAP", "ROOM READY")}
           </p>
 
           <h1 className="mt-3 font-mono text-4xl font-black tracking-[0.14em] sm:text-5xl">
@@ -612,8 +661,10 @@ export default function ConnectionGame({
           </h1>
 
           <p className="mx-auto mt-5 max-w-sm text-zinc-400">
-            Bagikan tautannya. Permainan otomatis dimulai
-            ketika pasanganmu masuk.
+            {pick(
+              "Bagikan tautannya. Permainan dimulai otomatis ketika pasanganmu bergabung.",
+              "Share the link. The game starts automatically when your partner joins.",
+            )}
           </p>
 
           <button
@@ -624,8 +675,8 @@ export default function ConnectionGame({
             className="mt-8 rounded-2xl bg-fuchsia-500 px-7 py-3.5 font-bold hover:bg-fuchsia-400"
           >
             {copied
-              ? "Tautan tersalin ✓"
-              : "Salin tautan undangan"}
+              ? pick("Tautan tersalin ✓", "Link copied ✓")
+              : pick("Salin tautan undangan", "Copy invitation link")}
           </button>
 
           <button
@@ -633,7 +684,7 @@ export default function ConnectionGame({
             onClick={leaveRoom}
             className="mt-6 block w-full text-sm text-zinc-500 hover:text-white"
           >
-            Keluar dari room
+            {pick("Keluar dari ruang", "Leave room")}
           </button>
 
           <ErrorMessage message={error} />
@@ -651,7 +702,7 @@ export default function ConnectionGame({
         100,
     );
 
-    const persona = resultPersona(score);
+    const persona = resultPersona(score, pick);
 
     return (
       <Shell>
@@ -661,7 +712,7 @@ export default function ConnectionGame({
           </div>
 
           <p className="mt-6 text-xs font-bold tracking-[0.2em] text-fuchsia-300">
-            IDENTITAS DUO KALIAN
+            {pick("HASIL KALIAN", "YOUR RESULT")}
           </p>
 
           <h1 className="mt-3 text-4xl font-black">
@@ -699,16 +750,16 @@ export default function ConnectionGame({
               </strong>
 
               <span className="mt-1 block text-[11px] text-zinc-500">
-                💞 Sejalan
+                💞 {pick("Selaras", "Aligned")}
               </span>
             </div>
           </div>
 
           <p className="mx-auto mt-6 max-w-md text-sm leading-6 text-zinc-500">
-            {game.matchCount} dari{" "}
-            {game.totalRounds} pilihan kalian sama.
-            Perbedaan bukan kekalahan—itu bahan obrolan
-            baru.
+            {pick(
+              `${game.matchCount} dari ${game.totalRounds} pilihan kalian sama. Pilihan yang berbeda bukan kekalahan; gunakan sebagai bahan percakapan baru.`,
+              `${game.matchCount} of ${game.totalRounds} choices matched. Different choices are not a loss; use them as new conversation starters.`,
+            )}
           </p>
 
           <button
@@ -716,15 +767,20 @@ export default function ConnectionGame({
             onClick={leaveRoom}
             className="mt-8 rounded-2xl bg-fuchsia-500 px-7 py-3.5 font-bold hover:bg-fuchsia-400"
           >
-            Main game lain
+            {pick("Mainkan permainan lain", "Play another game")}
           </button>
         </section>
       </Shell>
     );
   }
 
+  const prompt = getLocalizedPickOneRound(
+    game.prompt.id,
+    locale,
+  );
+
   const chosenOption =
-    game.prompt.options.find(
+    prompt.options.find(
       (option) =>
         option.id === game.yourAnswer,
     );
@@ -748,14 +804,13 @@ export default function ConnectionGame({
       game.revealedBets?.guest,
   );
 
-  const chapter =
-    CHAPTER_META[game.prompt.chapter];
+  const chapter = CHAPTER_META[prompt.chapter];
 
   function optionLabel(
     answer: PickOneAnswer | null,
   ) {
     return (
-      game.prompt.options.find(
+      prompt.options.find(
         (option) =>
           option.id === answer,
       )?.label ?? "—"
@@ -767,11 +822,11 @@ export default function ConnectionGame({
       <header className="mt-10 flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-black tracking-[0.2em] text-fuchsia-300">
-            ROOM {room.code}
+            {pick("RUANG", "ROOM")} {room.code}
           </p>
 
           <h1 className="mt-2 text-3xl font-black">
-            Pilih Mana?
+            {pick("Pilih Mana?", "Pick One")}
           </h1>
 
           <div className="mt-3 flex flex-wrap gap-2 text-xs">
@@ -797,8 +852,8 @@ export default function ConnectionGame({
           className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-zinc-300 hover:bg-white/10"
         >
           {copied
-            ? "Tersalin ✓"
-            : "Undang"}
+            ? pick("Tersalin ✓", "Copied ✓")
+            : pick("Undang", "Invite")}
         </button>
       </header>
 
@@ -819,8 +874,8 @@ export default function ConnectionGame({
 
             <p className="mt-1 text-xs text-zinc-500">
               {game.answered[role]
-                ? "Jawaban terkunci ✓"
-                : "Sedang memilih…"}
+                ? pick("Jawaban terkunci ✓", "Answer locked ✓")
+                : pick("Sedang memilih…", "Choosing…")}
             </p>
           </div>
         ))}
@@ -832,12 +887,12 @@ export default function ConnectionGame({
         <div className="flex items-center justify-between gap-3 text-xs text-zinc-500">
           <div className="flex flex-wrap items-center gap-2">
             <span>
-              {game.prompt.category}
+              {prompt.category}
             </span>
 
             <span className="rounded-full bg-white/5 px-2.5 py-1 text-zinc-300">
               {chapter.emoji}{" "}
-              {chapter.label}
+              {chapter.label[locale]}
             </span>
 
             {game.powerRound && (
@@ -848,7 +903,7 @@ export default function ConnectionGame({
           </div>
 
           <span>
-            Ronde {game.round}/
+            {pick("Ronde", "Round")} {game.round}/
             {game.totalRounds}
           </span>
         </div>
@@ -867,7 +922,7 @@ export default function ConnectionGame({
         </div>
 
         <h2 className="mt-8 text-2xl font-black leading-tight sm:text-3xl">
-          {game.prompt.prompt}
+          {prompt.prompt}
         </h2>
 
         {game.phase === "answering" &&
@@ -907,31 +962,37 @@ export default function ConnectionGame({
                 <span className="min-w-0 flex-1">
                   <strong className="block text-sm">
                     {heartBetSelected
-                      ? "Heart Bet terpasang"
-                      : "Yakin bakal kompak? Pasang Heart Bet"}
+                      ? pick("Heart Bet terpasang", "Heart Bet placed")
+                      : pick(
+                          "Yakin pilihan kalian sama? Pasang Heart Bet",
+                          "Expect a match? Place a Heart Bet",
+                        )}
                   </strong>
 
                   <span className="mt-1 block text-xs leading-5 text-zinc-500">
-                    Jika jawaban sama, pilihan ini
-                    memberi +1 spark ekstra.
+                    {pick(
+                      "Jika jawaban sama, pilihan ini memberi satu spark tambahan.",
+                      "If your answers match, this choice earns one extra spark.",
+                    )}
                   </span>
                 </span>
 
                 <span className="shrink-0 rounded-full bg-white/5 px-3 py-1 text-xs text-rose-200">
-                  {game.yourBetsRemaining} tersisa
+                  {game.yourBetsRemaining} {pick("tersisa", "left")}
                 </span>
               </button>
 
               {game.powerRound && (
                 <p className="mb-4 rounded-2xl border border-amber-300/20 bg-amber-300/10 px-4 py-3 text-sm text-amber-100">
-                  ⚡ Power Round: jawaban yang sama
-                  bernilai 2 spark sebelum bonus
-                  Heart Bet.
+                  {pick(
+                    "⚡ Ronde Jackpot: jawaban yang sama bernilai dua spark sebelum bonus Heart Bet.",
+                    "⚡ Jackpot round: a match is worth two sparks before any Heart Bet bonus.",
+                  )}
                 </p>
               )}
 
               <div className="grid gap-3 sm:grid-cols-2">
-                {game.prompt.options.map(
+                {prompt.options.map(
                   (option) => (
                     <button
                       type="button"
@@ -965,7 +1026,7 @@ export default function ConnectionGame({
           ) : (
             <div className="mt-7 rounded-3xl border border-fuchsia-400/20 bg-fuchsia-400/10 p-5">
               <p className="text-xs font-bold tracking-wider text-fuchsia-300">
-                PILIHANMU TERKUNCI
+                {pick("PILIHANMU TERKUNCI", "YOUR CHOICE IS LOCKED")}
               </p>
 
               <p className="mt-3 font-semibold">
@@ -974,13 +1035,15 @@ export default function ConnectionGame({
               </p>
 
               <p className="mt-3 text-sm text-zinc-400">
-                Menunggu pasanganmu menjawab tanpa
-                bocoran…
+                {pick(
+                  "Menunggu pasanganmu menjawab…",
+                  "Waiting for your partner to answer…",
+                )}
               </p>
 
               {game.yourBet && (
                 <p className="mt-4 inline-flex rounded-full border border-rose-300/20 bg-rose-300/10 px-3 py-1.5 text-xs font-bold text-rose-200">
-                  ♥ Heart Bet aktif
+                  ♥ {pick("Heart Bet aktif", "Heart Bet active")}
                 </p>
               )}
             </div>
@@ -1001,8 +1064,8 @@ export default function ConnectionGame({
 
               <h3 className="mt-3 text-xl font-black">
                 {matched
-                  ? "Hati kalian searah!"
-                  : "Dua pilihan, dua cerita."}
+                  ? pick("Pilihan kalian selaras.", "Your choices match.")
+                  : pick("Dua pilihan, dua sudut pandang.", "Two choices, two perspectives.")}
               </h3>
 
               {matched && (
@@ -1058,15 +1121,17 @@ export default function ConnectionGame({
               <div className="mt-5 border-t border-white/10 pt-5">
                 <p className="text-xs font-bold tracking-wider text-zinc-500">
                   {matched
-                    ? "MISI KOMPAK"
-                    : "OBROLKAN INI"}
+                    ? pick("MISI BERSAMA", "SHARED PROMPT")
+                    : pick("OBROLKAN INI", "DISCUSS THIS")}
                 </p>
 
                 <p className="mt-2 leading-6 text-zinc-300">
                   {matched
-                    ? "Dalam 15 detik, sepakati satu cara kecil untuk membawa pilihan ini ke date kalian berikutnya."
-                    : game.prompt
-                        .reflection}
+                    ? pick(
+                        "Dalam 15 detik, sepakati satu cara sederhana untuk membawa pilihan ini ke kencan kalian berikutnya.",
+                        "In 15 seconds, agree on one simple way to bring this choice into your next date.",
+                      )
+                    : prompt.reflection}
                 </p>
               </div>
 
@@ -1074,12 +1139,13 @@ export default function ConnectionGame({
                 anyRevealedBet && (
                   <div className="mt-4 rounded-2xl border border-rose-300/20 bg-rose-300/10 px-4 py-3 text-sm leading-6 text-rose-100">
                     <strong>
-                      Plot twist Heart Bet:
+                      {pick("Hasil Heart Bet:", "Heart Bet result:")}
                     </strong>{" "}
-                    pemain yang memasang bet mendapat
-                    20 detik untuk menjual
-                    pilihannya. Pasangan boleh berubah
-                    pikiran tanpa kehilangan spark.
+                    {" "}
+                    {pick(
+                      "Pemain yang memasang bet mendapat 20 detik untuk menjelaskan pilihannya. Pasangan boleh berubah pikiran tanpa kehilangan spark.",
+                      "The player who placed the bet has 20 seconds to make the case for their choice. Their partner may reconsider without losing a spark.",
+                    )}
                   </div>
                 )}
             </div>
@@ -1097,14 +1163,14 @@ export default function ConnectionGame({
               >
                 {game.round ===
                 game.totalRounds
-                  ? "Lihat hasil akhir"
-                  : "Pilihan berikutnya"}
+                  ? pick("Lihat hasil akhir", "View final results")
+                  : pick("Pilihan berikutnya", "Next choice")}
               </button>
             ) : (
               <p className="mt-7 text-center text-sm text-zinc-500">
-                Menunggu{" "}
+                {pick("Menunggu", "Waiting for")}{" "}
                 {room.players.host}{" "}
-                melanjutkan…
+                {pick("melanjutkan…", "to continue…")}
               </p>
             )}
           </div>

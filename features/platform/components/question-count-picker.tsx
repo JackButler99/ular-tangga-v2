@@ -2,27 +2,7 @@ import {
   QUESTION_COUNT_OPTIONS,
   type QuestionCount,
 } from "@/features/platform/question-count";
-
-const OPTION_DETAILS: Record<
-  QuestionCount,
-  {
-    label: string;
-    duration: string;
-  }
-> = {
-  5: {
-    label: "Cepat",
-    duration: "5–10 menit",
-  },
-  10: {
-    label: "Santai",
-    duration: "10–20 menit",
-  },
-  15: {
-    label: "Panjang",
-    duration: "20–30 menit",
-  },
-};
+import { useAppLanguage } from "@/features/platform/i18n/language-provider";
 
 export function QuestionCountPicker({
   value,
@@ -33,19 +13,38 @@ export function QuestionCountPicker({
   onChange: (value: QuestionCount) => void;
   disabled?: boolean;
 }) {
+  const { pick } = useAppLanguage();
+  const optionDetails: Record<
+    QuestionCount,
+    { label: string; duration: string }
+  > = {
+    5: {
+      label: pick("Cepat", "Quick"),
+      duration: pick("5–10 menit", "5–10 minutes"),
+    },
+    10: {
+      label: pick("Santai", "Standard"),
+      duration: pick("10–20 menit", "10–20 minutes"),
+    },
+    15: {
+      label: pick("Panjang", "Extended"),
+      duration: pick("20–30 menit", "20–30 minutes"),
+    },
+  };
+
   return (
     <fieldset
       disabled={disabled}
       className="mt-6"
     >
       <legend className="text-sm text-zinc-300">
-        Jumlah pertanyaan
+        {pick("Jumlah pertanyaan", "Number of questions")}
       </legend>
 
       <div className="mt-3 grid grid-cols-3 gap-2">
         {QUESTION_COUNT_OPTIONS.map((count) => {
           const selected = value === count;
-          const details = OPTION_DETAILS[count];
+          const details = optionDetails[count];
 
           return (
             <button

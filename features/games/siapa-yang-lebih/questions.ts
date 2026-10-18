@@ -1,3 +1,7 @@
+import type { AppLocale } from "@/features/platform/i18n/locale";
+
+import { MOST_LIKELY_QUESTIONS_EN } from "./questions.en";
+
 export type MostLikelyQuestionCategory =
   | "ringan"
   | "kebiasaan"
@@ -133,4 +137,30 @@ export function getMostLikelyQuestion(
   id: string,
 ): MostLikelyQuestion | null {
   return QUESTION_BY_ID.get(id) ?? null;
+}
+export function getLocalizedMostLikelyQuestion(
+  id: string,
+  locale: AppLocale,
+): MostLikelyQuestion | null {
+  const question = getMostLikelyQuestion(id);
+
+  if (!question || locale === "id") {
+    return question;
+  }
+
+  const translation = (
+    MOST_LIKELY_QUESTIONS_EN as Record<
+      string,
+      (typeof MOST_LIKELY_QUESTIONS_EN)[keyof typeof MOST_LIKELY_QUESTIONS_EN]
+    >
+  )[id];
+
+  if (!translation) {
+    return question;
+  }
+
+  return {
+    ...question,
+    text: translation.text,
+  };
 }

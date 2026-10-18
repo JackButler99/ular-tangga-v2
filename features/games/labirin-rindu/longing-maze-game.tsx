@@ -9,6 +9,8 @@ import {
 } from "react";
 
 import type { PlayerRole } from "@/features/platform/room/types";
+import { useAppLanguage } from "@/features/platform/i18n/language-provider";
+import { localizeRuntimeText } from "@/features/platform/i18n/runtime-text";
 
 import { MazeFailureScene } from "./maze-failure-scene";
 import { MazeFinishCelebration } from "./maze-finish-celebration";
@@ -24,6 +26,9 @@ import type {
 import {
   getMazeDanger,
   getMazeSkill,
+  localizeMazeDanger,
+  localizeMazeHistoryText,
+  localizeMazeSkill,
   type MazeSkillDefinition,
   type MazeSkillId,
 } from "./rpg-content";
@@ -31,15 +36,17 @@ import { useLongingMazeRoom } from "./use-longing-maze-room";
 
 const DIRECTION_UI: Record<
   MazeDirection,
-  { arrow: string; label: string }
+  { arrow: string; label: { id: string; en: string } }
 > = {
-  up: { arrow: "↑", label: "Atas" },
-  right: { arrow: "→", label: "Kanan" },
-  down: { arrow: "↓", label: "Bawah" },
-  left: { arrow: "←", label: "Kiri" },
+  up: { arrow: "↑", label: { id: "Atas", en: "Up" } },
+  right: { arrow: "→", label: { id: "Kanan", en: "Right" } },
+  down: { arrow: "↓", label: { id: "Bawah", en: "Down" } },
+  left: { arrow: "←", label: { id: "Kiri", en: "Left" } },
 };
 
 function Shell({ children }: { children: ReactNode }) {
+  const { pick } = useAppLanguage();
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#070812] px-4 py-7 text-white sm:px-6 sm:py-9">
       <div className="pointer-events-none absolute -left-36 top-10 h-96 w-96 rounded-full bg-violet-600/10 blur-3xl" />
@@ -51,7 +58,7 @@ function Shell({ children }: { children: ReactNode }) {
             href="/"
             className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-300 transition hover:border-white/20 hover:text-white"
           >
-            ← Katalog
+            ← {pick("Katalog", "Games")}
           </Link>
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-rose-300/25 bg-rose-300/10 text-xl">
             🛡️
@@ -64,9 +71,11 @@ function Shell({ children }: { children: ReactNode }) {
 }
 
 function ErrorMessage({ message }: { message: string }) {
+  const { locale } = useAppLanguage();
+
   return message ? (
     <p className="mt-5 rounded-2xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-200">
-      {message}
+      {localizeRuntimeText(locale, message)}
     </p>
   ) : null;
 }
@@ -89,30 +98,57 @@ function GameInstructions({
 }: {
   compact?: boolean;
 }) {
+  const { pick } = useAppLanguage();
+
+  const missions = [
+    {
+      icon: "🔮",
+      title: pick("Cari kekuatan", "Find useful abilities"),
+      text: pick(
+        "Masuki altar untuk memilih satu skill. Ada 12 altar, tetapi kalian tidak harus mengambil semuanya.",
+        "Enter an altar to choose one skill. There are 12 altars, but you do not need to visit all of them.",
+      ),
+    },
+    {
+      icon: "💎",
+      title: pick("Bawa satu fragmen", "Carry one fragment"),
+      text: pick(
+        "Siapa pun dapat mengambil fragmen mana pun. Jika kamu sudah membawa satu, sisakan fragmen lainnya untuk pasanganmu.",
+        "Either player can collect either fragment. Once you carry one, leave the other for your partner.",
+      ),
+    },
+    {
+      icon: "💗",
+      title: pick("Bertemu di pusat", "Meet at the center"),
+      text: pick(
+        "Setelah indikator mencapai 2/2 Fragmen, berdirilah bersama di pusat untuk memulai pertarungan terakhir.",
+        "Once the counter reaches 2/2 Fragments, stand together at the center to begin the final battle.",
+      ),
+    },
+  ];
+
   const content = (
     <div className="mt-5 border-t border-white/10 pt-5">
       <section className="rounded-2xl border border-rose-300/15 bg-gradient-to-br from-rose-300/[0.09] to-violet-300/[0.05] p-5">
         <p className="text-[10px] font-black tracking-[0.18em] text-rose-200">
-          CERITA KALIAN
+          {pick("CERITA KALIAN", "YOUR STORY")}
         </p>
 
         <h3 className="mt-2 text-lg font-black text-white">
-          Kabut Rindu memisahkan kalian.
+          {pick("Kabut Rindu memisahkan kalian.", "The Fog of Longing separated you.")}
         </h3>
 
         <p className="mt-2 text-sm leading-6 text-zinc-400">
-          Kamu masih dapat melihat dinding di dekatmu,
-          tetapi tidak dapat melihat bahaya yang sedang
-          memburumu. Hanya pasanganmu yang dapat melihat
-          ancaman itu dan menuntunmu. Temukan dua Fragmen
-          Hati, bersatu kembali di pusat labirin, lalu
-          lindungi satu sama lain dari Badai Pemisah.
+          {pick(
+            "Kamu dapat melihat dinding di dekatmu, tetapi tidak dapat melihat bahaya yang memburumu. Hanya pasanganmu yang dapat melihat ancaman itu dan menuntunmu. Temukan dua Fragmen Hati, bertemu kembali di pusat labirin, lalu lindungi satu sama lain dari Badai Pemisah.",
+            "You can see the nearby walls, but not the dangers pursuing you. Only your partner can see those threats and guide you. Find two Heart Fragments, reunite at the center of the maze, then protect each other from the Storm of Separation.",
+          )}
         </p>
       </section>
 
       <section className="mt-6">
         <p className="text-[10px] font-black tracking-[0.18em] text-cyan-200">
-          SATU GILIRAN BERJALAN SEPERTI INI
+          {pick("ALUR SATU GILIRAN", "HOW EACH TURN WORKS")}
         </p>
 
         <div className="mt-3 space-y-3">
@@ -123,18 +159,20 @@ function GameInstructions({
 
             <div>
               <strong className="text-sm text-white">
-                Penjaga membaca peta pasangan
+                {pick("Penjaga membaca peta pasangan", "The guardian reads their partner's map")}
               </strong>
 
               <p className="mt-1 text-xs leading-5 text-zinc-400">
-                Jika kartumu bertuliskan{" "}
+                {pick("Jika kartumu bertuliskan", "If your card says")}{" "}
                 <b className="text-violet-100">
-                  Menjadi penjaga
+                  {pick("Menjadi penjaga", "You are the guardian")}
                 </b>
-                , lihat dinding dan bahaya di sekitar
-                pasangan. Tekan 1–3 tombol arah, lalu tekan{" "}
+                {pick(
+                  ", lihat dinding dan bahaya di sekitar pasangan. Pilih 1–3 arah, lalu tekan",
+                  ", review the walls and dangers around your partner. Choose 1–3 directions, then press",
+                )}{" "}
                 <b className="text-white">
-                  Kirim langkah
+                  {pick("Kirim langkah", "Send route")}
                 </b>
                 .
               </p>
@@ -148,27 +186,33 @@ function GameInstructions({
 
             <div>
               <strong className="text-sm text-white">
-                Pejalan menentukan seberapa jauh ia percaya
+                {pick("Pejalan menentukan seberapa jauh ia percaya", "The traveler decides how far to trust the route")}
               </strong>
 
               <p className="mt-1 text-xs leading-5 text-zinc-400">
-                Jika kartumu bertuliskan{" "}
+                {pick("Jika kartumu bertuliskan", "If your card says")}{" "}
                 <b className="text-cyan-100">
-                  Sedang berjalan
+                  {pick("Sedang berjalan", "You are traveling")}
                 </b>
-                , tunggu rute masuk. Lalu tekan{" "}
+                {pick(
+                  ", tunggu rute masuk. Lalu pilih",
+                  ", wait for the route. Then choose",
+                )}{" "}
                 <b className="text-white">
-                  Jalankan 1 arah
+                  {pick("Jalankan 1 arah", "Follow 1 direction")}
                 </b>
                 ,{" "}
                 <b className="text-white">
-                  2 arah
+                  {pick("2 arah", "2 directions")}
                 </b>
-                , atau{" "}
+                {pick(", atau", ", or")}{" "}
                 <b className="text-white">
-                  3 arah
+                  {pick("3 arah", "3 directions")}
                 </b>
-                . Pion bergerak otomatis sesuai urutan.
+                {pick(
+                  ". Pion bergerak otomatis sesuai urutan.",
+                  ". Your piece moves automatically in that order.",
+                )}
               </p>
             </div>
           </div>
@@ -180,18 +224,18 @@ function GameInstructions({
 
             <div>
               <strong className="text-sm text-white">
-                Selesaikan akibat perjalanan
+                {pick("Selesaikan akibat perjalanan", "Resolve the outcome")}
               </strong>
 
               <p className="mt-1 text-xs leading-5 text-zinc-400">
-                Jika arah pertama menabrak dinding, seluruh
-                sisa rute dibatalkan. Jika menginjak bahaya,
-                hanya penjaga yang melihat jenisnya dan
-                memilih skill perlindungan atau tombol{" "}
+                {pick(
+                  "Jika suatu arah menabrak dinding, seluruh sisa rute dibatalkan. Jika pejalan menginjak bahaya, hanya penjaga yang melihat jenisnya dan memilih skill perlindungan atau",
+                  "If any direction hits a wall, the rest of the route is cancelled. If the traveler steps on a danger, only the guardian sees its type and chooses a protective skill or",
+                )}{" "}
                 <b className="text-white">
-                  Hadapi tanpa skill
+                  {pick("Hadapi tanpa skill", "Face it without a skill")}
                 </b>
-                . Setelah selesai, peran bertukar.
+                {pick(". Setelah selesai, peran bertukar.", ". Once resolved, the roles switch.")}
               </p>
             </div>
           </div>
@@ -199,21 +243,21 @@ function GameInstructions({
 
         <div className="mt-3 rounded-2xl border border-white/10 bg-black/25 p-4">
           <p className="text-[10px] font-black tracking-[0.16em] text-zinc-500">
-            CONTOH SATU GILIRAN
+            {pick("CONTOH SATU GILIRAN", "EXAMPLE TURN")}
           </p>
 
           <p className="mt-2 text-xs leading-5 text-zinc-400">
-            Penjaga mengirim{" "}
-            <b className="text-white">↑ → →</b>. Pejalan
-            memilih{" "}
+            {pick("Penjaga mengirim", "The guardian sends")}{" "}
+            <b className="text-white">↑ → →</b>
+            {pick(". Pejalan memilih", ". The traveler chooses")}{" "}
             <b className="text-white">
-              Jalankan 2 arah
+              {pick("Jalankan 2 arah", "Follow 2 directions")}
             </b>
-            . Pion mencoba ↑ lalu →. Jika keduanya berhasil,
-            pion maju dua petak dan kalian memperoleh{" "}
-            <b className="text-violet-200">
-              +1 Ikatan
-            </b>
+            {pick(
+              ". Pion mencoba ↑ lalu →. Jika keduanya berhasil, pion maju dua petak dan kalian memperoleh",
+              ". The piece attempts ↑ and then →. If both succeed, it advances two squares and you gain",
+            )}{" "}
+            <b className="text-violet-200">{pick("+1 Ikatan", "+1 Bond")}</b>
             .
           </p>
         </div>
@@ -221,36 +265,11 @@ function GameInstructions({
 
       <section className="mt-6">
         <p className="text-[10px] font-black tracking-[0.18em] text-amber-200">
-          MISI PERJALANAN
+          {pick("MISI PERJALANAN", "JOURNEY OBJECTIVES")}
         </p>
 
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
-          {[
-            {
-              icon: "🔮",
-              title: "Cari kekuatan",
-              text:
-                "Masuki altar untuk memilih satu skill. " +
-                "Ada 12 altar, tetapi kalian tidak wajib " +
-                "mengambil semuanya.",
-            },
-            {
-              icon: "💎",
-              title: "Bawa satu fragmen",
-              text:
-                "Siapa pun boleh mengambil fragmen mana pun. " +
-                "Jika kamu sudah membawa satu, sisakan " +
-                "fragmen lainnya untuk pasangan.",
-            },
-            {
-              icon: "💗",
-              title: "Bertemu di pusat",
-              text:
-                "Setelah indikator mencapai 2/2 Fragmen, " +
-                "berdirilah bersama di pusat untuk memulai " +
-                "pertarungan boss.",
-            },
-          ].map((mission) => (
+          {missions.map((mission) => (
             <div
               key={mission.title}
               className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4"
@@ -273,42 +292,46 @@ function GameInstructions({
 
       <section className="mt-6">
         <p className="text-[10px] font-black tracking-[0.18em] text-violet-200">
-          TIGA HAL YANG HARUS DIJAGA
+          {pick("TIGA HAL YANG HARUS DIJAGA", "THREE SHARED RESOURCES")}
         </p>
 
         <div className="mt-3 grid gap-2 sm:grid-cols-3">
           <div className="rounded-2xl border border-rose-300/10 bg-rose-300/[0.04] p-4">
             <strong className="text-sm text-rose-100">
-              ♥ Hati
+              ♥ {pick("Hati", "Hearts")}
             </strong>
 
             <p className="mt-1 text-xs leading-5 text-zinc-500">
-              Nyawa masing-masing pemain. Jika salah satu
-              mencapai nol, kalian kalah.
+              {pick(
+                "Daya tahan setiap pemain. Jika salah satunya mencapai nol, kalian kalah.",
+                "Each player's health. If either reaches zero, you lose.",
+              )}
             </p>
           </div>
 
           <div className="rounded-2xl border border-amber-300/10 bg-amber-300/[0.04] p-4">
             <strong className="text-sm text-amber-100">
-              🕯️ Cahaya
+              🕯️ {pick("Cahaya", "Light")}
             </strong>
 
             <p className="mt-1 text-xs leading-5 text-zinc-500">
-              Waktu perjalanan bersama. Setiap arah yang
-              dicoba menghabiskan satu Cahaya, termasuk saat
-              menabrak dinding.
+              {pick(
+                "Batas waktu perjalanan bersama. Setiap arah yang dicoba menghabiskan satu Cahaya, termasuk ketika menabrak dinding.",
+                "Your shared time limit. Every attempted direction uses one Light, including a move into a wall.",
+              )}
             </p>
           </div>
 
           <div className="rounded-2xl border border-violet-300/10 bg-violet-300/[0.04] p-4">
             <strong className="text-sm text-violet-100">
-              💞 Ikatan
+              💞 {pick("Ikatan", "Bond")}
             </strong>
 
             <p className="mt-1 text-xs leading-5 text-zinc-500">
-              Energi skill, maksimal lima. Rute sukses 2 arah
-              memberi +1; 3 arah memberi +2; mengambil
-              fragmen memberi +1.
+              {pick(
+                "Energi untuk skill, dengan kapasitas awal lima. Rute sukses dua arah memberi +1, tiga arah memberi +2, dan mengambil fragmen memberi +1.",
+                "Energy for skills, with a starting capacity of five. A successful two-step route gives +1, three steps give +2, and collecting a fragment gives +1.",
+              )}
             </p>
           </div>
         </div>
@@ -316,30 +339,33 @@ function GameInstructions({
 
       <section className="mt-6 rounded-2xl border border-fuchsia-300/15 bg-fuchsia-300/[0.06] p-5">
         <p className="text-[10px] font-black tracking-[0.18em] text-fuchsia-200">
-          PERTARUNGAN TERAKHIR
+          {pick("PERTARUNGAN TERAKHIR", "FINAL BATTLE")}
         </p>
 
         <p className="mt-2 text-sm leading-6 text-zinc-400">
-          Badai Pemisah berlangsung tiga gelombang. Pada
-          setiap gelombang, kamu melihat serangan yang menuju
-          pasanganmu. Pilih skill yang cocok, gunakan{" "}
+          {pick(
+            "Badai Pemisah berlangsung selama tiga gelombang. Pada setiap gelombang, kamu melihat serangan yang menuju pasanganmu. Pilih skill yang sesuai, gunakan",
+            "The Storm of Separation lasts three waves. During each wave, you see the attack aimed at your partner. Choose a suitable skill, use",
+          )}{" "}
           <b className="text-violet-100">
-            Perisai Ikatan
+            {pick("Perisai Ikatan", "Bond Shield")}
           </b>{" "}
-          seharga 2 Ikatan, atau pilih{" "}
+          {pick("seharga 2 Ikatan, atau pilih", "for 2 Bond Energy, or choose")}{" "}
           <b className="text-white">
-            Bertahan tanpa perlindungan
+            {pick("Bertahan tanpa perlindungan", "Endure without protection")}
           </b>
-          . Kalian menang setelah selamat dari gelombang
-          ketiga.
+          {pick(
+            ". Kalian menang setelah selamat dari gelombang ketiga.",
+            ". You win after surviving the third wave.",
+          )}
         </p>
       </section>
 
       <p className="mt-4 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-xs leading-5 text-zinc-500">
-        Catatan: petak 🔒 tetap dapat dilewati sebelum
-        fragmen lengkap. Inventaris hanya menyimpan empat
-        skill; mengambil skill kelima akan menggantikan skill
-        yang paling lama.
+        {pick(
+          "Catatan: petak 🔒 tetap dapat dilewati sebelum fragmen lengkap. Inventaris menyimpan maksimal empat skill; skill kelima menggantikan skill yang paling lama.",
+          "Note: you may pass through the 🔒 square before collecting both fragments. The inventory holds four skills; a fifth replaces the oldest one.",
+        )}
       </p>
     </div>
   );
@@ -354,12 +380,14 @@ function GameInstructions({
 
           <span className="min-w-0 flex-1">
             <strong className="block text-sm">
-              Cara bermain
+              {pick("Cara bermain", "How to play")}
             </strong>
 
             <span className="text-xs text-zinc-500">
-              Baca cerita dan ikuti satu giliran langkah demi
-              langkah
+              {pick(
+                "Baca cerita dan pelajari alur setiap giliran",
+                "Read the story and learn each turn's sequence",
+              )}
             </span>
           </span>
 
@@ -382,11 +410,11 @@ function GameInstructions({
 
         <div>
           <p className="text-xs font-black tracking-[0.18em] text-rose-300">
-            RPG CINTA TERBALIK
+            {pick("RPG KOOPERATIF", "COOPERATIVE RPG")}
           </p>
 
           <h2 className="mt-1 text-xl font-black">
-            Kamu adalah penjaga pasanganmu
+            {pick("Kamu adalah penjaga pasanganmu", "You are your partner's guardian")}
           </h2>
         </div>
       </div>
@@ -411,6 +439,7 @@ function wallStyle(cell: MazeCellView): CSSProperties {
 }
 
 function MazeBoard({ room }: { room: LongingMazeRoomView }) {
+  const { locale, pick } = useAppLanguage();
   const game = room.game;
   const fragmentsReady =
     game.playerState.host.fragment && game.playerState.guest.fragment;
@@ -452,7 +481,10 @@ function MazeBoard({ room }: { room: LongingMazeRoomView }) {
                   ? "z-10 ring-2 ring-inset ring-cyan-300/60"
                   : ""
               }`}
-              aria-label={`Petak ${cell.x + 1}, ${cell.y + 1}`}
+              aria-label={pick(
+                `Petak ${cell.x + 1}, ${cell.y + 1}`,
+                `Square ${cell.x + 1}, ${cell.y + 1}`,
+              )}
             >
               {!cell.visible && !cell.explored && cell.special === null && (
                 <span className="text-[10px] text-white/[0.06]">·</span>
@@ -472,7 +504,10 @@ function MazeBoard({ room }: { room: LongingMazeRoomView }) {
               )}
               {cell.special === "fragment" && (
                 <span
-                  title="Fragmen Hati — setiap pemain dapat membawa satu"
+                  title={pick(
+                    "Fragmen Hati — setiap pemain dapat membawa satu",
+                    "Heart Fragment — each player can carry one",
+                  )}
                   className="absolute text-xs drop-shadow-[0_0_8px_rgba(253,224,71,0.7)] sm:text-lg"
                 >
                   💎
@@ -480,7 +515,7 @@ function MazeBoard({ room }: { room: LongingMazeRoomView }) {
               )}
               {cell.special === "danger" && cell.danger && (
                 <span
-                  title={cell.danger.name}
+                  title={localizeMazeDanger(cell.danger, locale).name}
                   className="absolute text-xs sm:text-lg"
                 >
                   {cell.danger.emoji}
@@ -499,7 +534,11 @@ function MazeBoard({ room }: { room: LongingMazeRoomView }) {
                       title={`${playerName(
                         room,
                         role,
-                      )}${room.you === role ? " · Pionmu" : ""}`}
+                      )}${
+                        room.you === role
+                          ? pick(" · Pionmu", " · Your piece")
+                          : ""
+                      }`}
                       className={`relative flex h-5 w-5 items-center justify-center rounded-full border text-[9px] font-black sm:h-8 sm:w-8 sm:text-xs ${
                         role === "host"
                           ? "border-cyan-100 bg-cyan-400 text-slate-950 shadow-cyan-500/30"
@@ -530,11 +569,16 @@ function MazeBoard({ room }: { room: LongingMazeRoomView }) {
         })}
       </div>
       <div className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-2 text-[11px] text-zinc-500">
-        <span>💗 Titik temu</span>
-        <span>💎 Fragmen</span>
-        <span>🔮 Altar skill</span>
-        <span>👤 Pemburu</span>
-        <span>Bahaya hanya terlihat oleh penjaga</span>
+        <span>💗 {pick("Titik temu", "Meeting point")}</span>
+        <span>💎 {pick("Fragmen", "Fragment")}</span>
+        <span>🔮 {pick("Altar skill", "Skill altar")}</span>
+        <span>👤 {pick("Pemburu", "Hunter")}</span>
+        <span>
+          {pick(
+            "Bahaya hanya terlihat oleh penjaga",
+            "Only the guardian can see dangers",
+          )}
+        </span>
       </div>
     </div>
   );
@@ -549,6 +593,8 @@ function DirectionPad({
   stepCount: number;
   disabled?: boolean;
 }) {
+  const { locale, pick } = useAppLanguage();
+
   function directionButton(
     direction: MazeDirection,
     placement: string,
@@ -561,7 +607,10 @@ function DirectionPad({
         type="button"
         disabled={disabled}
         onClick={() => onDirection(direction)}
-        aria-label={`Tambah langkah ke ${item.label.toLowerCase()}`}
+        aria-label={pick(
+          `Tambah langkah ke ${item.label.id.toLowerCase()}`,
+          `Add a step ${item.label.en.toLowerCase()}`,
+        )}
         className={`group ${placement} ${shape} relative flex h-16 w-16 touch-manipulation select-none flex-col items-center justify-center border border-violet-200/25 bg-gradient-to-b from-violet-300/20 to-violet-500/10 text-violet-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_22px_rgba(0,0,0,0.28)] transition duration-150 hover:border-violet-200/45 hover:from-violet-300/30 hover:to-violet-500/20 active:scale-90 active:bg-violet-400/30 disabled:cursor-not-allowed disabled:opacity-30`}
       >
         <span className="text-2xl font-black leading-none transition-transform group-hover:scale-110">
@@ -569,7 +618,7 @@ function DirectionPad({
         </span>
 
         <span className="mt-1 text-[9px] font-black uppercase tracking-[0.12em] text-violet-200/60">
-          {item.label}
+          {item.label[locale]}
         </span>
       </button>
     );
@@ -597,7 +646,7 @@ function DirectionPad({
             </span>
 
             <span className="text-[7px] font-bold uppercase tracking-[0.12em] text-zinc-500">
-              langkah
+              {pick("langkah", "steps")}
             </span>
           </div>
         </div>
@@ -616,7 +665,10 @@ function DirectionPad({
       </div>
 
       <p className="mt-3 text-center text-[10px] font-semibold tracking-wide text-zinc-500">
-        Tekan arah untuk menyusun maksimal 3 langkah
+        {pick(
+          "Pilih arah untuk menyusun maksimal 3 langkah",
+          "Choose directions to build a route of up to 3 steps",
+        )}
       </p>
     </div>
   );
@@ -629,6 +681,7 @@ function RoutePlanner({
   busy: boolean;
   onSend(directions: MazeDirection[]): void;
 }) {
+  const { pick } = useAppLanguage();
   const [route, setRoute] = useState<MazeDirection[]>([]);
 
   function add(direction: MazeDirection) {
@@ -640,15 +693,22 @@ function RoutePlanner({
   return (
     <section className="rounded-[2rem] border border-violet-300/25 bg-violet-300/[0.07] p-6">
       <p className="text-xs font-black tracking-[0.18em] text-violet-200">
-        KAMU MENJAGA
+        {pick("KAMU MENJAGA", "YOU ARE THE GUARDIAN")}
       </p>
-      <h2 className="mt-2 text-2xl font-black">Susun rute pasanganmu.</h2>
+      <h2 className="mt-2 text-2xl font-black">
+        {pick("Susun rute pasanganmu.", "Build your partner's route.")}
+      </h2>
       <p className="mt-3 text-sm leading-6 text-zinc-400">
-        Kamu melihat dinding dan bahaya di dekat pasanganmu. Semua arah boleh dikirim—periksa petanya dengan teliti.
+        {pick(
+          "Kamu dapat melihat dinding dan bahaya di dekat pasanganmu. Semua arah dapat dikirim; periksa petanya dengan teliti.",
+          "You can see the walls and dangers near your partner. Any direction can be sent, so review the map carefully.",
+        )}
       </p>
       <div className="mt-5 flex min-h-14 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-black/20 p-3">
         {route.length === 0 ? (
-          <span className="text-sm text-zinc-600">Belum ada arah</span>
+          <span className="text-sm text-zinc-600">
+            {pick("Belum ada arah", "No directions yet")}
+          </span>
         ) : (
           route.map((direction, index) => (
             <span
@@ -674,7 +734,7 @@ function RoutePlanner({
           onClick={() => setRoute((current) => current.slice(0, -1))}
           className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-300 disabled:opacity-40"
         >
-          Hapus
+          {pick("Hapus", "Remove")}
         </button>
         <button
           type="button"
@@ -685,7 +745,8 @@ function RoutePlanner({
           }}
           className="rounded-2xl bg-violet-500 px-4 py-3 font-bold hover:bg-violet-400 disabled:opacity-40"
         >
-          Kirim {route.length || ""} langkah
+          {pick("Kirim", "Send")} {route.length || ""}{" "}
+          {pick("langkah", "steps")}
         </button>
       </div>
     </section>
@@ -703,6 +764,9 @@ function SkillCard({
   actionLabel: string;
   onClick(): void;
 }) {
+  const { locale } = useAppLanguage();
+  const localizedSkill = localizeMazeSkill(skill, locale);
+
   return (
     <button
       type="button"
@@ -711,14 +775,15 @@ function SkillCard({
       className="w-full rounded-2xl border border-white/10 bg-black/20 p-4 text-left transition hover:border-violet-300/30 hover:bg-violet-300/[0.07] disabled:cursor-not-allowed disabled:opacity-40"
     >
       <div className="flex items-start gap-3">
-        <span className="text-2xl">{skill.emoji}</span>
+        <span className="text-2xl">{localizedSkill.emoji}</span>
         <span className="min-w-0 flex-1">
-          <strong className="block text-sm">{skill.name}</strong>
+          <strong className="block text-sm">{localizedSkill.name}</strong>
           <span className="mt-1 block text-xs leading-5 text-zinc-500">
-            {skill.description}
+            {localizedSkill.description}
           </span>
           <span className="mt-2 block text-[11px] font-bold text-violet-300">
-            {actionLabel} · {skill.cost} Ikatan
+            {actionLabel} · {localizedSkill.cost}{" "}
+            {locale === "id" ? "Ikatan" : "Bond"}
           </span>
         </span>
       </div>
@@ -735,16 +800,20 @@ function InventoryPanel({
   busy: boolean;
   onUse(skillId: MazeSkillId): void;
 }) {
+  const { pick } = useAppLanguage();
   const game = room.game;
   return (
     <section className="rounded-[2rem] border border-white/10 bg-white/[0.035] p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-xs font-black tracking-[0.16em] text-zinc-500">
-            SKILL PENJAGA
+            {pick("SKILL PENJAGA", "GUARDIAN SKILLS")}
           </p>
           <p className="mt-1 text-xs text-zinc-600">
-            Selalu digunakan untuk pasanganmu
+            {pick(
+              "Selalu digunakan untuk pasanganmu",
+              "Always used to protect your partner",
+            )}
           </p>
         </div>
         <span className="rounded-full bg-violet-300/10 px-3 py-1 text-xs text-violet-200">
@@ -753,7 +822,10 @@ function InventoryPanel({
       </div>
       {game.inventory.length === 0 ? (
         <p className="mt-4 rounded-2xl border border-dashed border-white/10 p-4 text-sm text-zinc-600">
-          Jelajahi altar 🔮 untuk mendapatkan skill.
+          {pick(
+            "Jelajahi altar 🔮 untuk mendapatkan skill.",
+            "Explore an altar 🔮 to gain a skill.",
+          )}
         </p>
       ) : (
         <div className="mt-4 grid gap-2">
@@ -764,7 +836,7 @@ function InventoryPanel({
               disabled={
                 busy || !game.usableGuideSkillIds.includes(skill.id)
               }
-              actionLabel="Gunakan"
+              actionLabel={pick("Gunakan", "Use")}
               onClick={() => onUse(skill.id)}
             />
           ))}
@@ -781,6 +853,7 @@ function PlayerCard({
   room: LongingMazeRoomView;
   role: PlayerRole;
 }) {
+  const { locale, pick } = useAppLanguage();
   const state = room.game.playerState[role];
   const active = room.game.turn === role;
 
@@ -800,16 +873,16 @@ function PlayerCard({
 
           <p className="mt-1 text-xs text-zinc-500">
             {active
-              ? "Sedang berjalan"
-              : "Menjadi penjaga"}
+              ? pick("Sedang berjalan", "Traveling")
+              : pick("Menjadi penjaga", "Guardian")}
           </p>
         </div>
 
         <span
           title={
             state.fragment
-              ? "Fragmen Hati sudah ditemukan"
-              : "Fragmen Hati belum ditemukan"
+              ? pick("Fragmen Hati sudah ditemukan", "Heart Fragment found")
+              : pick("Fragmen Hati belum ditemukan", "Heart Fragment not found")
           }
           className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-bold sm:text-xs ${
             state.fragment
@@ -817,7 +890,9 @@ function PlayerCard({
               : "border-white/10 bg-white/[0.035] text-zinc-500"
           }`}
         >
-          {state.fragment ? "💎 Didapat" : "◇ Belum"}
+          {state.fragment
+            ? pick("💎 Didapat", "💎 Found")
+            : pick("◇ Belum", "◇ Not yet")}
         </span>
       </div>
 
@@ -831,31 +906,38 @@ function PlayerCard({
         </span>
 
         <span className="text-zinc-500">
-          {state.skillCount} skill
+          {state.skillCount} {pick("skill", "skills")}
         </span>
       </div>
 
       <div className="mt-3 border-t border-white/[0.06] pt-3">
         <p className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-600">
-          Skill terkumpul
+          {pick("Skill terkumpul", "Collected skills")}
         </p>
 
         {state.skills.length > 0 ? (
           <div className="mt-2 flex flex-wrap gap-1.5">
-            {state.skills.map((skill, index) => (
+            {state.skills.map((skill, index) => {
+              const localizedSkill = localizeMazeSkill(skill, locale);
+
+              return (
               <span
                 key={`${skill.id}-${index}`}
-                title={`${skill.description} Biaya: ${skill.cost} Ikatan.`}
+                title={pick(
+                  `${localizedSkill.description} Biaya: ${skill.cost} Ikatan.`,
+                  `${localizedSkill.description} Cost: ${skill.cost} Bond.`,
+                )}
                 className="inline-flex items-center gap-1 rounded-lg border border-violet-300/15 bg-violet-300/[0.07] px-2 py-1 text-[10px] leading-4 text-violet-100"
               >
-                <span>{skill.emoji}</span>
-                <span>{skill.name}</span>
+                <span>{localizedSkill.emoji}</span>
+                <span>{localizedSkill.name}</span>
               </span>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <p className="mt-2 text-[11px] text-zinc-600">
-            Belum memiliki skill.
+            {pick("Belum memiliki skill.", "No skills collected yet.")}
           </p>
         )}
       </div>
@@ -872,6 +954,7 @@ function SkillChoicePanel({
   busy: boolean;
   onChoose(skillId: MazeSkillId): void;
 }) {
+  const { pick } = useAppLanguage();
   const choice = room.game.pendingSkill;
   if (!choice) return null;
   if (!choice.options) {
@@ -879,10 +962,14 @@ function SkillChoicePanel({
       <section className="rounded-[2rem] border border-violet-300/25 bg-violet-300/[0.07] p-6 text-center">
         <div className="text-4xl">🔮</div>
         <h2 className="mt-4 text-xl font-black">
-          {playerName(room, choice.forRole)} menemukan Altar Ikatan
+          {playerName(room, choice.forRole)}{" "}
+          {pick("menemukan Altar Ikatan", "found a Bond Altar")}
         </h2>
         <p className="mt-2 text-sm text-zinc-400">
-          Pasanganmu sedang memilih kekuatan untuk menjagamu nanti.
+          {pick(
+            "Pasanganmu sedang memilih kemampuan untuk melindungimu.",
+            "Your partner is choosing an ability to protect you.",
+          )}
         </p>
       </section>
     );
@@ -891,11 +978,16 @@ function SkillChoicePanel({
     <section className="rounded-[2rem] border border-violet-300/30 bg-violet-300/[0.08] p-6">
       <div className="text-4xl">🔮</div>
       <p className="mt-4 text-xs font-black tracking-[0.18em] text-violet-200">
-        ALTAR IKATAN
+        {pick("ALTAR IKATAN", "BOND ALTAR")}
       </p>
-      <h2 className="mt-2 text-2xl font-black">Pilih satu skill penjaga.</h2>
+      <h2 className="mt-2 text-2xl font-black">
+        {pick("Pilih satu skill penjaga.", "Choose one guardian skill.")}
+      </h2>
       <p className="mt-2 text-sm leading-6 text-zinc-400">
-        Skill ini tidak dapat menyelamatkanmu sendiri. Simpan untuk melindungi pasanganmu.
+        {pick(
+          "Skill ini tidak dapat digunakan untuk melindungi dirimu sendiri. Simpan untuk pasanganmu.",
+          "This skill cannot protect you from your own danger. Save it for your partner.",
+        )}
       </p>
       <div className="mt-5 grid gap-3">
         {choice.options.map((skill) => (
@@ -903,7 +995,7 @@ function SkillChoicePanel({
             key={skill.id}
             skill={skill}
             disabled={busy}
-            actionLabel="Ambil skill"
+            actionLabel={pick("Ambil skill", "Take skill")}
             onClick={() => onChoose(skill.id)}
           />
         ))}
@@ -921,13 +1013,14 @@ function DangerPanel({
   busy: boolean;
   onResolve(skillId?: MazeSkillId): void;
 }) {
+  const { locale, pick } = useAppLanguage();
   const encounter = room.game.pendingDanger;
 
   if (!encounter?.danger) {
     return null;
   }
 
-  const danger = encounter.danger;
+  const danger = localizeMazeDanger(encounter.danger, locale);
 
   if (!encounter.canProtect) {
     return (
@@ -940,7 +1033,7 @@ function DangerPanel({
 
           <div>
             <p className="text-xs font-black tracking-[0.18em] text-red-200">
-              KAMU MENGINJAK BAHAYA
+              {pick("KAMU MENGINJAK BAHAYA", "YOU STEPPED INTO DANGER")}
             </p>
 
             <h2 className="mt-2 text-2xl font-black">
@@ -952,7 +1045,7 @@ function DangerPanel({
             </p>
 
             <p className="mt-2 text-sm font-semibold text-red-100">
-              Jika tidak dicegah: {danger.consequence}
+              {pick("Jika tidak dicegah:", "If not prevented:")} {danger.consequence}
             </p>
           </div>
         </div>
@@ -963,16 +1056,18 @@ function DangerPanel({
 
             <div>
               <p className="text-xs font-black tracking-[0.14em] text-emerald-200">
-                PASANGANMU SEDANG BERTINDAK
+                {pick("PASANGANMU SEDANG BERTINDAK", "YOUR PARTNER IS RESPONDING")}
               </p>
 
               <p className="mt-1 text-sm leading-6 text-zinc-400">
                 {playerName(
                   room,
                   otherRole(encounter.target),
-                )} sedang memilih cara untuk melindungimu.
-                Setelah keputusan dibuat, kamu akan melihat
-                perlindungan yang benar-benar digunakan.
+                )}{" "}
+                {pick(
+                  "sedang memilih cara untuk melindungimu. Setelah keputusan dibuat, kamu akan melihat perlindungan yang digunakan.",
+                  "is choosing how to protect you. Once the decision is made, you will see which protection was used.",
+                )}
               </p>
             </div>
           </div>
@@ -992,7 +1087,7 @@ function DangerPanel({
 
         <div>
           <p className="text-xs font-black tracking-[0.18em] text-red-200">
-            PASANGANMU TERANCAM
+            {pick("PASANGANMU TERANCAM", "YOUR PARTNER IS IN DANGER")}
           </p>
 
           <h2 className="mt-2 text-2xl font-black">
@@ -1004,7 +1099,7 @@ function DangerPanel({
           </p>
 
           <p className="mt-2 text-sm font-semibold text-red-100">
-            Jika tidak dicegah: {danger.consequence}
+            {pick("Jika tidak dicegah:", "If not prevented:")} {danger.consequence}
           </p>
         </div>
       </div>
@@ -1015,16 +1110,17 @@ function DangerPanel({
             key={`${skill.id}-${index}`}
             skill={skill}
             disabled={busy}
-            actionLabel="Lindungi sekarang"
+            actionLabel={pick("Lindungi sekarang", "Protect now")}
             onClick={() => onResolve(skill.id)}
           />
         ))}
 
         {counters.length === 0 && (
           <p className="rounded-2xl border border-dashed border-white/10 p-4 text-sm leading-6 text-zinc-500">
-            Kamu belum memiliki skill yang cocok.
-            Bahaya tetap dapat diselesaikan, tetapi pasanganmu
-            akan menerima akibatnya.
+            {pick(
+              "Kamu belum memiliki skill yang sesuai. Bahaya tetap dapat diselesaikan, tetapi pasanganmu akan menerima akibatnya.",
+              "You do not have a suitable skill. The danger can still be resolved, but your partner will face its consequence.",
+            )}
           </p>
         )}
 
@@ -1034,7 +1130,7 @@ function DangerPanel({
           onClick={() => onResolve()}
           className="rounded-2xl border border-red-300/20 bg-red-300/10 px-4 py-3 text-sm font-bold text-red-100 hover:bg-red-300/20 disabled:opacity-40"
         >
-          Hadapi tanpa skill
+          {pick("Hadapi tanpa skill", "Face it without a skill")}
         </button>
       </div>
     </section>
@@ -1046,6 +1142,7 @@ function DangerResultPanel({
 }: {
   room: LongingMazeRoomView;
 }) {
+  const { locale, pick } = useAppLanguage();
   const result =
     room.game.history[0]?.dangerResolution;
 
@@ -1058,10 +1155,13 @@ function DangerResultPanel({
     result.protector,
   );
 
-  const danger = getMazeDanger(result.danger);
+  const danger = localizeMazeDanger(
+    getMazeDanger(result.danger),
+    locale,
+  );
 
   const protection = result.skillId
-    ? getMazeSkill(result.skillId)
+    ? localizeMazeSkill(getMazeSkill(result.skillId), locale)
     : null;
 
   return (
@@ -1089,8 +1189,8 @@ function DangerResultPanel({
             }`}
           >
             {result.prevented
-              ? "KAMU BERHASIL DILINDUNGI"
-              : "BAHAYA MENGENAIMU"}
+              ? pick("KAMU BERHASIL DILINDUNGI", "YOU WERE PROTECTED")
+              : pick("BAHAYA MENGENAIMU", "THE DANGER HIT YOU")}
           </p>
 
           <h2 className="mt-2 text-2xl font-black">
@@ -1106,7 +1206,7 @@ function DangerResultPanel({
       {protection ? (
         <div className="mt-6 rounded-2xl border border-emerald-300/20 bg-black/20 p-4">
           <p className="text-xs font-black tracking-[0.14em] text-emerald-200">
-            PERLINDUNGAN DARI{" "}
+            {pick("PERLINDUNGAN DARI", "PROTECTION FROM")}{" "}
             {protectorName.toUpperCase()}
           </p>
 
@@ -1125,8 +1225,8 @@ function DangerResultPanel({
               </p>
 
               <p className="mt-2 text-sm font-semibold text-emerald-100">
-                Akibat “{danger.consequence}” berhasil
-                dibatalkan.
+                {pick("Akibat berhasil dibatalkan:", "Consequence prevented:")}{" "}
+                “{danger.consequence}”
               </p>
             </div>
           </div>
@@ -1134,12 +1234,14 @@ function DangerResultPanel({
       ) : (
         <div className="mt-6 rounded-2xl border border-amber-300/20 bg-black/20 p-4">
           <p className="text-xs font-black tracking-[0.14em] text-amber-200">
-            TANPA SKILL PERLINDUNGAN
+            {pick("TANPA SKILL PERLINDUNGAN", "NO PROTECTIVE SKILL")}
           </p>
 
           <p className="mt-2 text-sm leading-6 text-zinc-300">
-            {protectorName} tidak menggunakan skill untuk
-            menahan bahaya ini. Akibat yang diterima:{" "}
+            {pick(
+              `${protectorName} tidak menggunakan skill untuk menahan bahaya ini. Akibat yang diterima:`,
+              `${protectorName} did not use a skill against this danger. Consequence:`,
+            )}{" "}
             {danger.consequence}
           </p>
         </div>
@@ -1157,9 +1259,12 @@ function BossPanel({
   busy: boolean;
   onProtect(protection: MazeBossProtection): void;
 }) {
+  const { locale, pick } = useAppLanguage();
   const boss = room.game.boss;
   if (!boss) return null;
-  const danger = boss.attackOnPartner;
+  const danger = boss.attackOnPartner
+    ? localizeMazeDanger(boss.attackOnPartner, locale)
+    : null;
   const skills = room.game.inventory.filter((skill) =>
     boss.usableSkillIds.includes(skill.id),
   );
@@ -1168,28 +1273,34 @@ function BossPanel({
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-black tracking-[0.18em] text-fuchsia-200">
-            BADAI PEMISAH · GELOMBANG {boss.round}/{boss.totalRounds}
+            {pick("BADAI PEMISAH · GELOMBANG", "STORM OF SEPARATION · WAVE")}{" "}
+            {boss.round}/{boss.totalRounds}
           </p>
           <h2 className="mt-2 text-2xl font-black">
-            Lindungi pasanganmu.
+            {pick("Lindungi pasanganmu.", "Protect your partner.")}
           </h2>
         </div>
         <span className="text-4xl">🌪️</span>
       </div>
       {danger && (
         <div className="mt-5 rounded-2xl border border-red-300/20 bg-black/20 p-4">
-          <p className="text-xs font-bold text-red-200">SERANGAN YANG KAMU LIHAT</p>
+          <p className="text-xs font-bold text-red-200">
+            {pick("SERANGAN YANG KAMU LIHAT", "THE ATTACK YOU CAN SEE")}
+          </p>
           <p className="mt-2 text-lg font-black">
             {danger.emoji} {danger.name}
           </p>
           <p className="mt-1 text-sm text-zinc-400">
-            Mengarah ke {playerName(room, room.you ? otherRole(room.you) : "guest")}.
+            {pick("Mengarah ke", "Aimed at")} {playerName(room, room.you ? otherRole(room.you) : "guest")}.
           </p>
         </div>
       )}
       {boss.submittedYou ? (
         <p className="mt-5 rounded-2xl border border-white/10 bg-black/20 p-5 text-center text-sm text-zinc-400">
-          Perlindunganmu sudah siap. Menunggu pasangan memilih…
+          {pick(
+            "Perlindunganmu sudah siap. Menunggu pasangan memilih…",
+            "Your protection is ready. Waiting for your partner…",
+          )}
         </p>
       ) : (
         <div className="mt-5 grid gap-3">
@@ -1198,7 +1309,7 @@ function BossPanel({
               key={`${skill.id}-${index}`}
               skill={skill}
               disabled={busy}
-              actionLabel="Gunakan melawan badai"
+              actionLabel={pick("Gunakan melawan badai", "Use against the storm")}
               onClick={() => onProtect(skill.id)}
             />
           ))}
@@ -1208,9 +1319,12 @@ function BossPanel({
             onClick={() => onProtect("bond")}
             className="rounded-2xl border border-violet-300/25 bg-violet-300/10 px-4 py-3 text-left font-bold text-violet-100 disabled:opacity-40"
           >
-            💞 Perisai Ikatan
+            💞 {pick("Perisai Ikatan", "Bond Shield")}
             <span className="mt-1 block text-xs font-normal text-zinc-400">
-              Perlindungan universal · membutuhkan 2 Ikatan
+              {pick(
+                "Perlindungan universal · membutuhkan 2 Ikatan",
+                "Universal protection · requires 2 Bond Energy",
+              )}
             </span>
           </button>
           <button
@@ -1219,7 +1333,7 @@ function BossPanel({
             onClick={() => onProtect("endure")}
             className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-300 disabled:opacity-40"
           >
-            Bertahan tanpa perlindungan
+            {pick("Bertahan tanpa perlindungan", "Endure without protection")}
           </button>
         </div>
       )}
@@ -1232,26 +1346,39 @@ function MazePrologue({
 }: {
   onContinue: () => void;
 }) {
+  const { pick } = useAppLanguage();
   const missions = [
     {
       icon: "🧭",
-      title: "Percayai pasanganmu",
-      text: "Saat kamu berjalan, pasanganmu melihat bahaya yang tidak dapat kamu lihat dan menunjukkan arah yang aman.",
+      title: pick("Percayai pasanganmu", "Trust your partner"),
+      text: pick(
+        "Saat kamu berjalan, pasanganmu melihat bahaya yang tidak dapat kamu lihat dan menunjukkan arah yang aman.",
+        "While you travel, your partner can see dangers hidden from you and guide you toward a safe route.",
+      ),
     },
     {
       icon: "🛡️",
-      title: "Lindungi satu sama lain",
-      text: "Kamu tidak dapat melindungi dirimu sendiri. Hanya kamu yang dapat melindungi pasanganmu ketika bahaya menyerang.",
+      title: pick("Lindungi satu sama lain", "Protect each other"),
+      text: pick(
+        "Kamu tidak dapat melindungi dirimu sendiri. Hanya kamu yang dapat melindungi pasanganmu ketika bahaya menyerang.",
+        "You cannot protect yourself. Only you can protect your partner when danger strikes.",
+      ),
     },
     {
       icon: "🔮",
-      title: "Persiapkan bekal",
-      text: "Singgahi altar selama perjalanan untuk memperoleh skill dan memperkuat Ikatan kalian.",
+      title: pick("Persiapkan kemampuan", "Prepare your abilities"),
+      text: pick(
+        "Singgahi altar selama perjalanan untuk memperoleh skill dan memperkuat Ikatan kalian.",
+        "Visit altars along the way to gain skills and strengthen your Bond.",
+      ),
     },
     {
       icon: "💗",
-      title: "Hadapi pertarungan terakhir",
-      text: "Temukan dua Fragmen Hati, buka pintu di pusat labirin, lalu hadapi Badai Pemisah bersama.",
+      title: pick("Hadapi pertarungan terakhir", "Face the final battle"),
+      text: pick(
+        "Temukan dua Fragmen Hati, buka pintu di pusat labirin, lalu hadapi Badai Pemisah bersama.",
+        "Find two Heart Fragments, open the gate at the maze's center, then face the Storm of Separation together.",
+      ),
     },
   ];
 
@@ -1261,18 +1388,18 @@ function MazePrologue({
         <div className="text-5xl">🕯️ 🌫️ 🕯️</div>
 
         <p className="mt-6 text-xs font-black tracking-[0.22em] text-rose-300">
-          PROLOG · LABIRIN RINDU
+          {pick("PROLOG · LABIRIN RINDU", "PROLOGUE · MAZE OF LONGING")}
         </p>
 
         <h1 className="mx-auto mt-4 max-w-2xl text-3xl font-black leading-tight sm:text-5xl">
-          Kalian terpisah di dalam labirin.
+          {pick("Kalian terpisah di dalam labirin.", "You are separated inside the maze.")}
         </h1>
 
         <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-zinc-400 sm:text-base">
-          Ketika kabut turun, kalian terbangun di lorong yang berbeda.
-          Carilah jalan untuk kembali bertemu, tetapi jangan berjalan
-          sendirian. Bahaya yang tidak dapat kamu lihat justru terlihat
-          oleh pasanganmu.
+          {pick(
+            "Ketika kabut turun, kalian terbangun di lorong yang berbeda. Carilah jalan untuk kembali bertemu, tetapi jangan berjalan tanpa panduan. Bahaya yang tidak dapat kamu lihat justru terlihat oleh pasanganmu.",
+            "When the fog descends, you wake in separate corridors. Find your way back to each other, but do not travel without guidance. The dangers hidden from you are visible to your partner.",
+          )}
         </p>
 
         <div className="mt-8 grid gap-3 text-left sm:grid-cols-2">
@@ -1296,12 +1423,14 @@ function MazePrologue({
 
         <div className="mt-6 rounded-2xl border border-amber-300/20 bg-amber-300/[0.07] px-5 py-4">
           <strong className="text-sm text-amber-100">
-            Percayalah kepada pasanganmu.
+            {pick("Percayalah kepada pasanganmu.", "Trust your partner.")}
           </strong>
 
           <p className="mt-1 text-xs leading-5 text-zinc-400">
-            Dengarkan petunjuknya ketika kamu berjalan. Saat giliranmu
-            menjaga, keselamatan pasanganmu berada di tanganmu.
+            {pick(
+              "Dengarkan petunjuknya ketika kamu berjalan. Saat giliranmu menjaga, keselamatan pasanganmu berada di tanganmu.",
+              "Follow their guidance while you travel. When you become the guardian, your partner's safety is in your hands.",
+            )}
           </p>
         </div>
 
@@ -1310,7 +1439,7 @@ function MazePrologue({
           onClick={onContinue}
           className="mt-7 w-full rounded-2xl bg-gradient-to-r from-violet-500 via-pink-500 to-rose-500 px-6 py-4 font-black shadow-lg shadow-rose-500/20 transition hover:-translate-y-0.5 hover:brightness-110 active:scale-[0.98]"
         >
-          Aku siap mempercayai pasangan
+          {pick("Aku siap mempercayai pasangan", "I am ready to trust my partner")}
         </button>
       </section>
     </Shell>
@@ -1318,6 +1447,7 @@ function MazePrologue({
 }
 
 export default function LongingMazeGame() {
+  const { locale, pick } = useAppLanguage();
   const {
     room,
     busy,
@@ -1356,7 +1486,9 @@ export default function LongingMazeGame() {
       <Shell>
         <div className="mt-28 text-center">
           <div className="mx-auto h-12 w-12 animate-pulse rounded-3xl bg-rose-400/10" />
-          <p className="mt-5 text-zinc-400">Menyalakan Cahaya Ikatan…</p>
+          <p className="mt-5 text-zinc-400">
+            {pick("Menyalakan Cahaya Ikatan…", "Lighting the Bond…")}
+          </p>
         </div>
       </Shell>
     );
@@ -1367,23 +1499,29 @@ export default function LongingMazeGame() {
       <Shell>
         <header className="mt-14 max-w-4xl">
           <p className="text-xs font-black tracking-[0.24em] text-rose-300">
-            LABIRIN RINDU · PENJAGA HATI
+            {pick("LABIRIN RINDU · PENJAGA HATI", "MAZE OF LONGING · HEART GUARDIANS")}
           </p>
           <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-6xl">
-            Bahayamu terlihat oleh dia. Bahayanya terlihat olehmu.
+            {pick(
+              "Bahayamu terlihat olehnya. Bahayanya terlihat olehmu.",
+              "Your partner sees your danger. You see theirs.",
+            )}
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-7 text-zinc-400 sm:text-lg">
-            Jelajahi labirin 7×7, temukan skill, lindungi pasangan dari bahaya yang tidak dapat mereka lihat, dan hadapi Badai Pemisah bersama.
+            {pick(
+              "Jelajahi labirin 7×7, temukan skill, lindungi pasangan dari bahaya yang tidak dapat mereka lihat, dan hadapi Badai Pemisah bersama.",
+              "Explore a 7×7 maze, collect skills, protect your partner from dangers they cannot see, and face the Storm of Separation together.",
+            )}
           </p>
           <div className="mt-7 flex flex-wrap gap-2 text-xs">
             <span className="rounded-full border border-rose-300/20 bg-rose-300/10 px-3 py-1.5 text-rose-100">
-              🛡️ RPG kooperatif
+              {pick("🛡️ RPG kooperatif", "🛡️ Cooperative RPG")}
             </span>
             <span className="rounded-full border border-violet-300/20 bg-violet-300/10 px-3 py-1.5 text-violet-100">
-              🔮 9 skill
+              {pick("🔮 9 skill", "🔮 9 skills")}
             </span>
             <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-cyan-100">
-              💗 15–20 menit
+              {pick("💗 15–20 menit", "💗 15–20 minutes")}
             </span>
           </div>
         </header>
@@ -1394,13 +1532,13 @@ export default function LongingMazeGame() {
             className="rounded-[2rem] border border-rose-300/20 bg-white/[0.05] p-6 shadow-2xl shadow-black/20"
           >
             <p className="text-xs font-bold tracking-[0.18em] text-zinc-500">
-              MULAI PETUALANGAN
+              {pick("MULAI PETUALANGAN", "START THE JOURNEY")}
             </p>
             <label
               htmlFor="maze-create-name"
               className="mt-6 block text-sm font-medium text-zinc-300"
             >
-              Nama panggilanmu
+              {pick("Nama panggilanmu", "Your display name")}
             </label>
             <input
               id="maze-create-name"
@@ -1409,7 +1547,7 @@ export default function LongingMazeGame() {
               minLength={2}
               maxLength={20}
               required
-              placeholder="Misalnya: Ara"
+              placeholder={pick("Misalnya: Ara", "For example: Alex")}
               className="mt-2 w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3.5 outline-none focus:border-rose-400/50"
             />
             <button
@@ -1417,7 +1555,9 @@ export default function LongingMazeGame() {
               disabled={busy}
               className="mt-6 w-full rounded-2xl bg-rose-500 px-5 py-3.5 font-bold hover:bg-rose-400 disabled:opacity-50"
             >
-              {busy ? "Membuka labirin…" : "Buat room & undang pasangan"}
+              {busy
+                ? pick("Membuka labirin…", "Opening the maze…")
+                : pick("Buat ruang dan undang pasangan", "Create room and invite partner")}
             </button>
           </form>
           <form
@@ -1425,13 +1565,13 @@ export default function LongingMazeGame() {
             className="rounded-[2rem] border border-white/10 bg-white/[0.035] p-6"
           >
             <p className="text-xs font-bold tracking-[0.18em] text-zinc-500">
-              PUNYA KODE?
+              {pick("PUNYA KODE?", "HAVE A CODE?")}
             </p>
             <label
               htmlFor="maze-room-code"
               className="mt-6 block text-sm font-medium text-zinc-300"
             >
-              Kode room
+              {pick("Kode ruang", "Room code")}
             </label>
             <input
               id="maze-room-code"
@@ -1453,10 +1593,13 @@ export default function LongingMazeGame() {
               disabled={busy || roomCode.length < 6}
               className="mt-4 w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-3.5 font-semibold hover:bg-white/10 disabled:opacity-40"
             >
-              Buka room
+              {pick("Buka ruang", "Open room")}
             </button>
             <p className="mt-8 rounded-2xl border border-white/5 bg-black/10 p-4 text-sm leading-6 text-zinc-500">
-              Setiap room mendapatkan labirin, bahaya, altar, dan kombinasi skill baru.
+              {pick(
+                "Setiap ruang mendapatkan labirin, bahaya, altar, dan kombinasi skill baru.",
+                "Every room receives a new maze, danger layout, altars, and skill combination.",
+              )}
             </p>
           </form>
         </section>
@@ -1472,20 +1615,24 @@ export default function LongingMazeGame() {
         <section className="mx-auto mt-14 max-w-3xl rounded-[2rem] border border-rose-300/25 bg-white/[0.045] p-7 text-center sm:p-10">
           <div className="text-5xl">🛡️</div>
           <p className="mt-6 text-xs font-black tracking-[0.22em] text-rose-300">
-            PANGGILAN PENJAGA
+            {pick("PANGGILAN PENJAGA", "A GUARDIAN IS NEEDED")}
           </p>
           <h1 className="mt-4 text-3xl font-black">
-            {room.players.host} membutuhkanmu di dalam labirin.
+            {room.players.host}{" "}
+            {pick("membutuhkanmu di dalam labirin.", "needs you inside the maze.")}
           </h1>
           <p className="mt-3 text-sm text-zinc-400">
-            Room <strong className="font-mono text-white">{room.code}</strong>
+            {pick("Ruang", "Room")} <strong className="font-mono text-white">{room.code}</strong>
           </p>
           <div className="mt-7 text-left">
             <GameInstructions compact />
           </div>
           {roomFull ? (
             <p className="mt-8 rounded-2xl bg-black/20 p-4 text-zinc-300">
-              Room ini sudah memiliki dua penjaga.
+              {pick(
+                "Ruang ini sudah memiliki dua penjaga.",
+                "This room already has two guardians.",
+              )}
             </p>
           ) : (
             <form
@@ -1496,7 +1643,7 @@ export default function LongingMazeGame() {
                 htmlFor="maze-join-name"
                 className="text-sm font-medium text-zinc-300"
               >
-                Nama panggilanmu
+                {pick("Nama panggilanmu", "Your display name")}
               </label>
               <input
                 id="maze-join-name"
@@ -1505,7 +1652,7 @@ export default function LongingMazeGame() {
                 minLength={2}
                 maxLength={20}
                 required
-                placeholder="Misalnya: Bima"
+                placeholder={pick("Misalnya: Bima", "For example: Sam")}
                 className="mt-2 w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3.5 outline-none focus:border-rose-400/50"
               />
               <button
@@ -1513,7 +1660,9 @@ export default function LongingMazeGame() {
                 disabled={busy}
                 className="mt-4 w-full rounded-2xl bg-rose-500 px-5 py-3.5 font-bold hover:bg-rose-400 disabled:opacity-50"
               >
-                {busy ? "Memasuki labirin…" : "Jaga pasanganmu"}
+                {busy
+                  ? pick("Memasuki labirin…", "Entering the maze…")
+                  : pick("Jaga pasanganmu", "Protect your partner")}
               </button>
             </form>
           )}
@@ -1523,7 +1672,7 @@ export default function LongingMazeGame() {
             onClick={leaveRoom}
             className="mt-7 text-sm text-zinc-500 hover:text-white"
           >
-            Kembali
+            {pick("Kembali", "Back")}
           </button>
         </section>
       </Shell>
@@ -1538,27 +1687,32 @@ export default function LongingMazeGame() {
             🕯️
           </div>
           <p className="mt-7 text-xs font-bold tracking-[0.2em] text-zinc-500">
-            MENUNGGU PENJAGA KEDUA
+            {pick("MENUNGGU PENJAGA KEDUA", "WAITING FOR THE SECOND GUARDIAN")}
           </p>
           <h1 className="mt-3 font-mono text-4xl font-black tracking-[0.14em] sm:text-5xl">
             {room.code}
           </h1>
           <p className="mx-auto mt-5 max-w-sm text-zinc-400">
-            Bagikan tautannya. Petualangan dimulai setelah pasanganmu bergabung.
+            {pick(
+              "Bagikan tautannya. Petualangan dimulai setelah pasanganmu bergabung.",
+              "Share the link. The journey begins after your partner joins.",
+            )}
           </p>
           <button
             type="button"
             onClick={() => void copyInvite()}
             className="mt-8 rounded-2xl bg-rose-500 px-7 py-3.5 font-bold hover:bg-rose-400"
           >
-            {copied ? "Tautan tersalin ✓" : "Salin tautan undangan"}
+            {copied
+              ? pick("Tautan tersalin ✓", "Link copied ✓")
+              : pick("Salin tautan undangan", "Copy invitation link")}
           </button>
           <button
             type="button"
             onClick={leaveRoom}
             className="mt-6 block w-full text-sm text-zinc-500 hover:text-white"
           >
-            Keluar dari room
+            {pick("Keluar dari ruang", "Leave room")}
           </button>
           <ErrorMessage message={error} />
         </section>
@@ -1592,41 +1746,55 @@ export default function LongingMazeGame() {
           <MazeFinishCelebration
             key={`${room.code}-maze-finished`}
             hostName={room.players.host}
-            guestName={room.players.guest ?? "Pasangan"}
+            guestName={room.players.guest ?? pick("Pasangan", "Partner")}
           />
         )}
         {lost && (
           <MazeFailureScene
             key={`${room.code}-maze-failed`}
             reason={
-              game.history.find(
-                (item) => item.kind === "lost",
-              )?.message ??
-              "Cahaya terakhir padam sebelum perjalanan selesai."
+              localizeMazeHistoryText(
+                game.history.find(
+                  (item) => item.kind === "lost",
+                )?.message ??
+                  "Cahaya terakhir padam sebelum perjalanan selesai.",
+                locale,
+              )
             }
           />
         )}
         <section className="mx-auto mt-14 max-w-3xl rounded-[2rem] border border-rose-300/20 bg-gradient-to-b from-rose-400/10 to-white/[0.03] p-8 text-center sm:p-12">
           <div className="text-6xl">{won ? "💞" : "🌫️"}</div>
           <p className="mt-6 text-xs font-bold tracking-[0.2em] text-rose-300">
-            {won ? "BADAI TELAH REDA" : "PERJALANAN TERHENTI"}
+            {won
+              ? pick("BADAI TELAH REDA", "THE STORM HAS SUBSIDED")
+              : pick("PERJALANAN TERHENTI", "THE JOURNEY ENDED")}
           </p>
           <h1 className="mt-3 text-4xl font-black">
             {won
-              ? "Kalian menjadi pelindung satu sama lain."
-              : "Labirin menang kali ini."}
+              ? pick(
+                  "Kalian menjadi pelindung satu sama lain.",
+                  "You became each other's guardians.",
+                )
+              : pick("Labirin menang kali ini.", "The maze won this time.")}
           </h1>
           <p className="mx-auto mt-4 max-w-lg leading-7 text-zinc-400">
             {won
-              ? "Bukan kekuatan sendiri yang membawa kalian pulang, melainkan keputusan untuk saling menjaga sampai akhir."
-              : "Coba susun rute yang lebih hati-hati, jelajahi lebih banyak altar, dan simpan skill yang tepat untuk boss."}
+              ? pick(
+                  "Bukan kekuatan sendiri yang membawa kalian pulang, melainkan keputusan untuk saling menjaga sampai akhir.",
+                  "You found your way home through the decision to protect each other until the end.",
+                )
+              : pick(
+                  "Susun rute dengan lebih hati-hati, jelajahi lebih banyak altar, dan simpan skill yang sesuai untuk pertarungan terakhir.",
+                  "Plan routes more carefully, explore more altars, and save the right skills for the final battle.",
+                )}
           </p>
           <div className="mx-auto mt-8 grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4">
             {[
-              [result.hearts, "Hati tersisa"],
-              [result.protected, "Bahaya ditahan"],
-              [result.skillsUsed, "Skill dipakai"],
-              [`${result.efficiency}%`, "Efisiensi"],
+              [result.hearts, pick("Hati tersisa", "Hearts left")],
+              [result.protected, pick("Bahaya ditahan", "Dangers blocked")],
+              [result.skillsUsed, pick("Skill dipakai", "Skills used")],
+              [`${result.efficiency}%`, pick("Efisiensi", "Efficiency")],
             ].map(([value, label]) => (
               <div
                 key={label}
@@ -1648,11 +1816,12 @@ export default function LongingMazeGame() {
               onClick={() => void performAction("maze-restart")}
               className="mt-8 rounded-2xl bg-rose-500 px-7 py-3.5 font-bold hover:bg-rose-400 disabled:opacity-50"
             >
-              Mulai petualangan baru
+              {pick("Mulai petualangan baru", "Start a new journey")}
             </button>
           ) : (
             <p className="mt-8 text-sm text-zinc-500">
-              {room.players.host} dapat membuka labirin baru…
+              {room.players.host}{" "}
+              {pick("dapat membuka labirin baru…", "can open a new maze…")}
             </p>
           )}
           <button
@@ -1660,7 +1829,7 @@ export default function LongingMazeGame() {
             onClick={leaveRoom}
             className="mt-6 block w-full text-sm text-zinc-500 hover:text-white"
           >
-            Kembali ke awal game
+            {pick("Kembali ke awal permainan", "Back to the game start")}
           </button>
           <ErrorMessage message={error} />
         </section>
@@ -1675,26 +1844,26 @@ export default function LongingMazeGame() {
       <header className="mt-9 flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-black tracking-[0.2em] text-rose-300">
-            ROOM {room.code} · RONDE {game.round}
+            {pick("RUANG", "ROOM")} {room.code} · {pick("RONDE", "ROUND")} {game.round}
           </p>
           <h1 className="mt-2 text-3xl font-black">
-            Labirin Rindu: Penjaga Hati
+            {pick("Labirin Rindu: Penjaga Hati", "Maze of Longing: Heart Guardians")}
           </h1>
           <div className="mt-3 flex flex-wrap gap-2 text-xs">
             <span className="rounded-full border border-amber-300/20 bg-amber-300/10 px-3 py-1.5 text-amber-100">
               🕯️ {game.light}/{game.maxLight}
             </span>
             <span className="rounded-full border border-violet-300/20 bg-violet-300/10 px-3 py-1.5 text-violet-100">
-              💞 {game.bond}/{game.maxBond} Ikatan
+              💞 {game.bond}/{game.maxBond} {pick("Ikatan", "Bond")}
             </span>
             <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-cyan-100">
-              🔮 {game.claimedAltars}/{game.totalAltars} altar
+              🔮 {game.claimedAltars}/{game.totalAltars} {pick("altar", "altars")}
             </span>
             <span className="rounded-full border border-rose-300/20 bg-rose-300/10 px-3 py-1.5 text-rose-100">
               💎{" "}
               {Number(game.playerState.host.fragment) +
                 Number(game.playerState.guest.fragment)}
-              /2 Fragmen
+              /2 {pick("Fragmen", "Fragments")}
             </span>
           </div>
         </div>
@@ -1703,7 +1872,9 @@ export default function LongingMazeGame() {
           onClick={() => void copyInvite()}
           className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-zinc-300 hover:bg-white/10"
         >
-          {copied ? "Tersalin ✓" : "Undang"}
+          {copied
+            ? pick("Tersalin ✓", "Copied ✓")
+            : pick("Undang", "Invite")}
         </button>
       </header>
 
@@ -1720,21 +1891,24 @@ export default function LongingMazeGame() {
           <div className="mb-5 flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-black tracking-[0.16em] text-zinc-500">
-                PETA PERLINDUNGAN
+                {pick("PETA PERLINDUNGAN", "GUARDIAN MAP")}
               </p>
               <p className="mt-1 text-sm text-zinc-300">
-                Dinding dan bahaya di dekat pasanganmu terlihat di sini.
+                {pick(
+                  "Dinding dan bahaya di dekat pasanganmu terlihat di sini.",
+                  "Walls and dangers near your partner are visible here.",
+                )}
               </p>
             </div>
             <span className="rounded-full bg-white/5 px-3 py-1.5 text-xs text-zinc-400">
-              {game.movesUsed} langkah
+              {game.movesUsed} {pick("langkah", "steps")}
             </span>
           </div>
           {room.you && (
             <div className="mb-4 flex justify-end">
               <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-[10px] text-zinc-400">
                 <span className="h-2.5 w-2.5 rounded-full border border-white bg-violet-200 shadow-[0_0_8px_rgba(255,255,255,0.9),0_0_14px_rgba(196,181,253,0.65)]" />
-                Halo putih menandai pionmu
+                {pick("Halo putih menandai pionmu", "A white halo marks your piece")}
               </span>
             </div>
           )}
@@ -1747,10 +1921,13 @@ export default function LongingMazeGame() {
 
               <span className="min-w-0 flex-1">
                 <strong className="block text-sm text-white">
-                  Legenda simbol
+                  {pick("Legenda simbol", "Symbol legend")}
                 </strong>
                 <span className="text-xs text-zinc-500">
-                  Tekan untuk melihat arti petak, bahaya, dan status
+                  {pick(
+                    "Tekan untuk melihat arti petak, bahaya, dan status",
+                    "Open to review squares, dangers, and status symbols",
+                  )}
                 </span>
               </span>
 
@@ -1761,64 +1938,82 @@ export default function LongingMazeGame() {
 
             <div className="border-t border-white/10 p-4">
               <p className="text-[10px] font-black tracking-[0.18em] text-violet-300">
-                PETA LABIRIN
+                {pick("PETA LABIRIN", "MAZE MAP")}
               </p>
 
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {[
                   {
                     symbol: "💗",
-                    title: "Titik temu terbuka",
-                    description:
+                    title: pick("Titik temu terbuka", "Open meeting point"),
+                    description: pick(
                       "Tujuan akhir setelah kedua Fragmen Hati ditemukan.",
+                      "The final destination after both Heart Fragments are found.",
+                    ),
                   },
                   {
                     symbol: "🔒",
-                    title: "Titik temu terkunci",
-                    description:
+                    title: pick("Titik temu terkunci", "Locked meeting point"),
+                    description: pick(
                       "Belum dapat dimasuki karena fragmen belum lengkap.",
+                      "It cannot be entered until both fragments are found.",
+                    ),
                   },
                   {
                     symbol: "💎",
-                    title: "Fragmen Hati",
-                    description:
-                      "Siapa pun boleh mengambilnya, tetapi setiap pemain hanya dapat membawa satu.",
+                    title: pick("Fragmen Hati", "Heart Fragment"),
+                    description: pick(
+                      "Siapa pun dapat mengambilnya, tetapi setiap pemain hanya dapat membawa satu.",
+                      "Either player may collect it, but each can carry only one.",
+                    ),
                   },
                   {
                     symbol: "🔮",
-                    title: "Altar Ikatan",
-                    description:
+                    title: pick("Altar Ikatan", "Bond Altar"),
+                    description: pick(
                       "Memberikan pilihan skill untuk melindungi pasangan.",
+                      "Offers a choice of skills for protecting your partner.",
+                    ),
                   },
                   {
                     symbol: "✦",
-                    title: "Altar telah digunakan",
-                    description:
+                    title: pick("Altar telah digunakan", "Used altar"),
+                    description: pick(
                       "Skill dari altar ini sudah diambil.",
+                      "A skill has already been taken from this altar.",
+                    ),
                   },
                   {
                     symbol: "🔵",
-                    title: "Pion host",
-                    description:
-                      "Posisi pemain yang membuat room.",
+                    title: pick("Pion host", "Host piece"),
+                    description: pick(
+                      "Posisi pemain yang membuat ruang.",
+                      "The position of the player who created the room.",
+                    ),
                   },
                   {
                     symbol: "🩷",
-                    title: "Pion pasangan",
-                    description:
-                      "Posisi pemain yang bergabung ke room.",
+                    title: pick("Pion pasangan", "Partner piece"),
+                    description: pick(
+                      "Posisi pemain yang bergabung ke ruang.",
+                      "The position of the player who joined the room.",
+                    ),
                   },
                   {
                     symbol: "•",
-                    title: "Jejak perjalanan",
-                    description:
+                    title: pick("Jejak perjalanan", "Travel trail"),
+                    description: pick(
                       "Petak yang pernah dilewati oleh pemain.",
+                      "A square previously visited by a player.",
+                    ),
                   },
                   {
                     symbol: "·",
-                    title: "Kabut belum dipetakan",
-                    description:
+                    title: pick("Kabut belum dipetakan", "Unmapped fog"),
+                    description: pick(
                       "Area yang belum terlihat oleh kedua pemain.",
+                      "An area neither player has seen.",
+                    ),
                   },
                 ].map((item) => (
                   <div
@@ -1842,45 +2037,57 @@ export default function LongingMazeGame() {
               </div>
 
               <p className="mt-6 text-[10px] font-black tracking-[0.18em] text-rose-300">
-                BAHAYA
+                {pick("BAHAYA", "DANGERS")}
               </p>
 
               <p className="mt-2 text-xs leading-5 text-zinc-500">
-                Bahaya di dekatmu hanya terlihat oleh pasanganmu.
-                Dengarkan petunjuk pasangan sebelum berjalan.
+                {pick(
+                  "Bahaya di dekatmu hanya terlihat oleh pasanganmu. Dengarkan petunjuk pasangan sebelum berjalan.",
+                  "Only your partner can see nearby dangers. Follow their guidance before moving.",
+                )}
               </p>
 
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {[
                   {
                     symbol: "🌹",
-                    title: "Duri Sunyi",
-                    description:
+                    title: pick("Duri Sunyi", "Thorns of Silence"),
+                    description: pick(
                       "Mengurangi satu Hati jika tidak dilindungi.",
+                      "Removes one Heart if not blocked.",
+                    ),
                   },
                   {
                     symbol: "🌫️",
-                    title: "Kabut Ragu",
-                    description:
+                    title: pick("Kabut Ragu", "Fog of Doubt"),
+                    description: pick(
                       "Memadamkan tiga Cahaya perjalanan.",
+                      "Extinguishes three Journey Lights.",
+                    ),
                   },
                   {
                     symbol: "🌊",
-                    title: "Gelombang Jarak",
-                    description:
+                    title: pick("Gelombang Jarak", "Wave of Distance"),
+                    description: pick(
                       "Mundur satu petak dan kehilangan satu Hati.",
+                      "Moves back one square and removes one Heart.",
+                    ),
                   },
                   {
                     symbol: "🌀",
-                    title: "Gema Salah Paham",
-                    description:
+                    title: pick("Gema Salah Paham", "Echo of Misunderstanding"),
+                    description: pick(
                       "Menghilangkan seluruh energi Ikatan.",
+                      "Removes all Bond Energy.",
+                    ),
                   },
                   {
                     symbol: "👤",
-                    title: "Bayangan Sepi",
-                    description:
+                    title: pick("Bayangan Sepi", "Shadow of Loneliness"),
+                    description: pick(
                       "Pemburu bergerak setiap giliran dan melukai pemain yang tertangkap.",
+                      "The hunter moves every round and harms a player it catches.",
+                    ),
                   },
                 ].map((item) => (
                   <div
@@ -1904,28 +2111,34 @@ export default function LongingMazeGame() {
               </div>
 
               <p className="mt-6 text-[10px] font-black tracking-[0.18em] text-cyan-300">
-                STATUS PERJALANAN
+                {pick("STATUS PERJALANAN", "JOURNEY STATUS")}
               </p>
 
               <div className="mt-3 grid gap-2 sm:grid-cols-3">
                 {[
                   {
                     symbol: "♥",
-                    title: "Hati",
-                    description:
+                    title: pick("Hati", "Hearts"),
+                    description: pick(
                       "Daya tahan pemain. Permainan berakhir jika mencapai nol.",
+                      "A player's health. The game ends if it reaches zero.",
+                    ),
                   },
                   {
                     symbol: "🕯️",
-                    title: "Cahaya",
-                    description:
+                    title: pick("Cahaya", "Light"),
+                    description: pick(
                       "Batas perjalanan; berkurang setiap kali melangkah.",
+                      "The journey limit; reduced with every attempted step.",
+                    ),
                   },
                   {
                     symbol: "💞",
-                    title: "Ikatan",
-                    description:
+                    title: pick("Ikatan", "Bond"),
+                    description: pick(
                       "Energi untuk memakai skill. Kapasitas awal 5; Inti Ikatan dapat menaikkannya hingga 9.",
+                      "Energy used for skills. Starting capacity is 5; Bond Core can raise it to 9.",
+                    ),
                   },
                 ].map((item) => (
                   <div
@@ -1980,9 +2193,11 @@ export default function LongingMazeGame() {
           ) : yourTurn ? (
             <section className="rounded-[2rem] border border-cyan-300/25 bg-cyan-300/[0.07] p-6">
               <p className="text-xs font-black tracking-[0.18em] text-cyan-200">
-                KAMU BERJALAN
+                {pick("KAMU BERJALAN", "YOU ARE TRAVELING")}
               </p>
-              <h2 className="mt-2 text-2xl font-black">Seberapa jauh kamu percaya?</h2>
+              <h2 className="mt-2 text-2xl font-black">
+                {pick("Seberapa jauh kamu percaya?", "How far do you trust the route?")}
+              </h2>
               {game.route ? (
                 <>
                   <div className="mt-5 flex justify-center gap-2 rounded-2xl border border-cyan-200/15 bg-black/20 p-4">
@@ -1999,9 +2214,9 @@ export default function LongingMazeGame() {
                     {game.route.directions.map((_, index) => {
                       const steps = index + 1;
                       const labels = [
-                        "Langkah aman",
-                        "Percaya kamu",
-                        "Percaya penuh",
+                        pick("Langkah aman", "One careful step"),
+                        pick("Percaya padamu", "I trust you"),
+                        pick("Percaya penuh", "Full trust"),
                       ];
                       return (
                         <button
@@ -2017,7 +2232,8 @@ export default function LongingMazeGame() {
                         >
                           {labels[index]}
                           <span className="ml-2 text-xs font-normal text-cyan-100/60">
-                            Jalankan {steps} arah
+                            {pick("Jalankan", "Follow")} {steps}{" "}
+                            {pick("arah", steps === 1 ? "direction" : "directions")}
                           </span>
                         </button>
                       );
@@ -2026,7 +2242,11 @@ export default function LongingMazeGame() {
                 </>
               ) : (
                 <p className="mt-5 rounded-2xl border border-dashed border-white/10 p-5 text-center text-sm text-zinc-500">
-                  Menunggu {playerName(room, otherRole(room.you))} membaca peta dan mengirim rute…
+                  {pick("Menunggu", "Waiting for")} {playerName(room, otherRole(room.you))}{" "}
+                  {pick(
+                    "membaca peta dan mengirim rute…",
+                    "to read the map and send a route…",
+                  )}
                 </p>
               )}
             </section>
@@ -2035,7 +2255,7 @@ export default function LongingMazeGame() {
               {game.route?.from === room.you ? (
                 <section className="rounded-[2rem] border border-violet-300/25 bg-violet-300/[0.07] p-6 text-center">
                   <p className="text-xs font-black tracking-[0.18em] text-violet-200">
-                    RUTE TERKIRIM
+                    {pick("RUTE TERKIRIM", "ROUTE SENT")}
                   </p>
                   <div className="mt-5 flex justify-center gap-2">
                     {game.route.directions.map((direction, index) => (
@@ -2048,7 +2268,11 @@ export default function LongingMazeGame() {
                     ))}
                   </div>
                   <p className="mt-4 text-sm text-zinc-400">
-                    Menunggu {playerName(room, game.turn)} menentukan seberapa jauh ia percaya.
+                    {pick("Menunggu", "Waiting for")} {playerName(room, game.turn)}{" "}
+                    {pick(
+                      "menentukan seberapa jauh ia percaya.",
+                      "to decide how far to trust the route.",
+                    )}
                   </p>
                 </section>
               ) : (
@@ -2072,10 +2296,10 @@ export default function LongingMazeGame() {
           <section className="rounded-[2rem] border border-white/10 bg-white/[0.035] p-5">
             <div className="flex items-center justify-between">
               <p className="text-xs font-black tracking-[0.16em] text-zinc-500">
-                CATATAN PETUALANGAN
+                {pick("CATATAN PETUALANGAN", "JOURNEY LOG")}
               </p>
               <span className="text-xs text-zinc-600">
-                {game.damagePrevented} perlindungan
+                {game.damagePrevented} {pick("perlindungan", "protections")}
               </span>
             </div>
             <div className="mt-4 space-y-3">
@@ -2085,7 +2309,9 @@ export default function LongingMazeGame() {
                   className="flex gap-3 text-sm"
                 >
                   <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-rose-300/50" />
-                  <p className="leading-5 text-zinc-400">{item.message}</p>
+                  <p className="leading-5 text-zinc-400">
+                    {localizeMazeHistoryText(item.message, locale)}
+                  </p>
                 </div>
               ))}
             </div>
@@ -2099,7 +2325,7 @@ export default function LongingMazeGame() {
         onClick={leaveRoom}
         className="mt-8 block w-full text-center text-sm text-zinc-600 hover:text-white"
       >
-        Keluar dari petualangan
+        {pick("Keluar dari petualangan", "Leave the journey")}
       </button>
     </Shell>
   );
