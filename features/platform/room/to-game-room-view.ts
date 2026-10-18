@@ -3,6 +3,10 @@ import {
   type ConnectionRoomView,
 } from "@/features/games/connection-games/room-view";
 import {
+  toCryptogramRoomView,
+  type CryptogramRoomView,
+} from "@/features/games/cryptogram-cinta/room-view";
+import {
   toLongingMazeRoomView,
   type LongingMazeRoomView,
 } from "@/features/games/labirin-rindu/room-view";
@@ -17,6 +21,7 @@ import {
 import type { SnakeLadderRoomView } from "@/features/games/ular-tangga/game";
 import {
   COUPLE_QUIZ_SLUG,
+  CRYPTOGRAM_CINTA_SLUG,
   isConnectionGameSlug,
   LONGING_MAZE_SLUG,
   MOST_LIKELY_SLUG,
@@ -32,7 +37,8 @@ export type GameRoomView =
   | QuizRoomView
   | MostLikelyRoomView
   | ConnectionRoomView
-  | LongingMazeRoomView;
+  | LongingMazeRoomView
+  | CryptogramRoomView;
 
 export function toGameRoomView(
   row: RoomRow,
@@ -52,6 +58,10 @@ export function toGameRoomView(
 
   if (row.gameSlug === LONGING_MAZE_SLUG) {
     return toLongingMazeRoomView(row, token);
+  }
+
+  if (row.gameSlug === CRYPTOGRAM_CINTA_SLUG) {
+    return toCryptogramRoomView(row, token);
   }
 
   if (isConnectionGameSlug(row.gameSlug)) {

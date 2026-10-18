@@ -1,7 +1,12 @@
 import {
+  CRYPTOGRAM_CINTA_SLUG,
   isPlayableGameSlug,
   SNAKE_LADDER_SLUG,
 } from "@/features/platform/game-registry";
+import {
+  DEFAULT_CRYPTOGRAM_LANGUAGE,
+  isCryptogramLanguage,
+} from "@/features/games/cryptogram-cinta/content";
 import { toGameRoomView } from "@/features/platform/room/to-game-room-view";
 import {
   cleanName,
@@ -18,6 +23,7 @@ export async function POST(request: Request) {
       hostName?: unknown;
       gameSlug?: unknown;
       questionCount?: unknown;
+      cryptogramLanguage?: unknown;
     };
 
     const hostName = cleanName(payload.hostName);
@@ -63,16 +69,37 @@ export async function POST(request: Request) {
       );
     }
 
+    if (
+      gameSlug === CRYPTOGRAM_CINTA_SLUG &&
+      payload.cryptogramLanguage !== undefined &&
+      !isCryptogramLanguage(payload.cryptogramLanguage)
+    ) {
+      return Response.json(
+        {
+          error: "Bahasa kutipan harus Bahasa Indonesia atau Inggris.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
     const questionCount = isQuestionCount(
       payload.questionCount,
     )
       ? payload.questionCount
       : DEFAULT_QUESTION_COUNT;
-    
+    const cryptogramLanguage = isCryptogramLanguage(
+      payload.cryptogramLanguage,
+    )
+      ? payload.cryptogramLanguage
+      : DEFAULT_CRYPTOGRAM_LANGUAGE;
+
     const { room, token } = await createRoom(
       hostName,
       gameSlug,
       questionCount,
+      cryptogramLanguage,
     );
 
     return Response.json(

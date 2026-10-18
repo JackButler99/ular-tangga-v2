@@ -3,6 +3,10 @@ import {
   isConnectionRoomAction,
 } from "@/features/games/connection-games/room-actions";
 import {
+  applyCryptogramRoomAction,
+  isCryptogramRoomAction,
+} from "@/features/games/cryptogram-cinta/room-actions";
+import {
   applyLongingMazeAction,
   isLongingMazeAction,
 } from "@/features/games/labirin-rindu/room-actions";
@@ -16,6 +20,7 @@ import {
 } from "@/features/games/siapa-yang-lebih/room-actions";
 import {
   COUPLE_QUIZ_SLUG,
+  CRYPTOGRAM_CINTA_SLUG,
   isConnectionGameSlug,
   LONGING_MAZE_SLUG,
   MOST_LIKELY_SLUG,
@@ -149,6 +154,8 @@ export async function POST(
       trustSteps?: unknown;
       skillId?: unknown;
       protection?: unknown;
+      cipherLetter?: unknown;
+      plainLetter?: unknown;
     };
 
     const token = tokenFrom(request);
@@ -242,6 +249,25 @@ export async function POST(
           trustSteps: payload.trustSteps,
           skillId: payload.skillId,
           protection: payload.protection,
+        },
+      );
+
+      return Response.json(
+        toGameRoomView(updated, token),
+      );
+    }
+
+    if (
+      room.gameSlug === CRYPTOGRAM_CINTA_SLUG &&
+      isCryptogramRoomAction(payload.action)
+    ) {
+      const updated = await applyCryptogramRoomAction(
+        room,
+        token,
+        payload.action,
+        {
+          cipherLetter: payload.cipherLetter,
+          plainLetter: payload.plainLetter,
         },
       );
 

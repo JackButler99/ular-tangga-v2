@@ -2,6 +2,7 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { gameRooms } from "@/db/schema";
 import { createInitialGameState } from "@/features/platform/room/create-game-state";
+import type { CryptogramLanguage } from "@/features/games/cryptogram-cinta/content";
 import {
   CHALLENGES,
   CHALLENGE_POSITIONS,
@@ -90,14 +91,16 @@ export async function getRoom(code: string) {
 export async function createRoom(
   hostName: string,
   gameSlug: string,
-   questionCount: QuestionCount =
+  questionCount: QuestionCount =
     DEFAULT_QUESTION_COUNT,
+  cryptogramLanguage?: CryptogramLanguage,
 ) {
   const db = getDb();
   const token = createPlayerToken();
   const gameState = createInitialGameState(
     gameSlug,
     questionCount,
+    cryptogramLanguage,
   );
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const code = createRoomCode();

@@ -78,3 +78,10 @@ Desktop.ini
 # Local backup and development preview
 /components/backup*.tsx
 /app/mock-finish/
+
+!.env.example
+*.log
+patches
+patches/
+*.patch
+.vercel/

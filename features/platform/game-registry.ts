@@ -16,6 +16,7 @@ export const COUPLE_QUIZ_SLUG = "seberapa-kenal";
 export const MOST_LIKELY_SLUG = "siapa-yang-lebih";
 export const PICK_ONE_SLUG = "pilih-mana";
 export const LONGING_MAZE_SLUG = "labirin-rindu";
+export const CRYPTOGRAM_CINTA_SLUG = "cryptogram-cinta";
 
 export const CONNECTION_GAME_SLUGS = [
   PICK_ONE_SLUG,
@@ -86,6 +87,17 @@ export const GAME_CATALOG: readonly GameCatalogItem[] = [
     symbol: "🛡️",
     status: "available",
     href: "/games/labirin-rindu",
+  },
+  {
+    slug: CRYPTOGRAM_CINTA_SLUG,
+    title: "Cryptogram Cinta",
+    description:
+      "Pecahkan kutipan cinta bersama, jaga Hati Sandi, dan bertahan sejauh mungkin saat level semakin sulit.",
+    mood: "Kooperatif & penuh teka-teki",
+    duration: "10 menit–tanpa batas",
+    symbol: "🔐",
+    status: "available",
+    href: "/games/cryptogram-cinta",
   },
 ];
 
